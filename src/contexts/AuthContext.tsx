@@ -4,7 +4,7 @@ import { authService } from '@/services/auth';
 import { handleApiError } from '@/services/api';
 
 interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
 }
 
@@ -59,9 +59,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     checkAuth();
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (username: string, password: string): Promise<boolean> => {
     try {
-      const response = await authService.login(email, password);
+      const response = await authService.login(username, password);
       
       // Store tokens
       localStorage.setItem('access_token', response.access);

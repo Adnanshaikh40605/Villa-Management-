@@ -99,7 +99,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium">{user?.name}</span>
-                  <span className="text-xs text-sidebar-foreground/70">{user?.email}</span>
+                  <span className="text-xs text-sidebar-foreground/70">@{user?.username}</span>
                 </div>
               </div>
               <Button

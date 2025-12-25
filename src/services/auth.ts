@@ -5,6 +5,7 @@ export interface LoginResponse {
   refresh: string;
   user: {
     id: number;
+    username: string;
     email: string;
     name: string;
   };
@@ -12,15 +13,16 @@ export interface LoginResponse {
 
 export interface User {
   id: number;
+  username: string;
   email: string;
   name: string;
   phone?: string;
 }
 
 export const authService = {
-  async login(email: string, password: string): Promise<LoginResponse> {
+  async login(username: string, password: string): Promise<LoginResponse> {
     const response = await api.post<LoginResponse>('/auth/login/', {
-      email,
+      username,
       password,
     });
     return response.data;
