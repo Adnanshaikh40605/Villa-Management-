@@ -139,3 +139,87 @@
   background-color: hsl(var(--available)) !important;
   border-color: hsl(var(--available)) !important;
 }
+
+/* React Day Picker Custom Styles */
+.rdp {
+  --rdp-cell-size: 40px;
+  --rdp-accent-color: hsl(var(--primary));
+  --rdp-background-color: hsl(var(--primary) / 0.1);
+  --rdp-accent-color-dark: hsl(var(--primary) / 0.9);
+  --rdp-background-color-dark: hsl(var(--primary) / 0.2);
+  --rdp-outline: 2px solid hsl(var(--primary));
+  --rdp-outline-selected: 2px solid hsl(var(--primary));
+  margin: 0;
+}
+
+.rdp-months {
+  @apply p-4;
+}
+
+.rdp-month {
+  @apply space-y-4;
+}
+
+.rdp-caption {
+  @apply flex justify-center items-center relative mb-4;
+}
+
+.rdp-caption_label {
+  @apply text-sm font-semibold text-foreground;
+}
+
+.rdp-nav {
+  @apply flex items-center gap-1;
+}
+
+.rdp-nav_button {
+  @apply inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-7 w-7 p-0 opacity-50 hover:opacity-100;
+}
+
+.rdp-nav_button_previous {
+  @apply absolute left-1;
+}
+
+.rdp-nav_button_next {
+  @apply absolute right-1;
+}
+
+.rdp-table {
+  @apply w-full border-collapse;
+}
+
+.rdp-head_cell {
+  @apply text-muted-foreground rounded-md w-9 font-normal text-[0.8rem];
+}
+
+.rdp-cell {
+  @apply h-9 w-9 text-center text-sm p-0 relative;
+}
+
+.rdp-day {
+  @apply h-9 w-9 p-0 font-normal rounded-md hover:bg-accent hover:text-accent-foreground inline-flex items-center justify-center;
+}
+
+.rdp-day_selected {
+  @apply bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground;
+}
+
+.rdp-day_today {
+  @apply bg-accent text-accent-foreground;
+}
+
+.rdp-day_outside {
+  @apply text-muted-foreground opacity-50;
+}
+
+.rdp-day_disabled {
+  @apply text-muted-foreground opacity-50 cursor-not-allowed;
+}
+
+.rdp-day_range_middle {
+  @apply bg-accent text-accent-foreground;
+}
+
+.rdp-day_hidden {
+  @apply invisible;
+}

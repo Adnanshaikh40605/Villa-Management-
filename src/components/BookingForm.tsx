@@ -21,6 +21,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { toast } from '@/lib/toast';
+import { DatePicker } from '@/components/ui/date-picker';
+import { format, parse } from 'date-fns';
 
 interface BookingFormProps {
   booking?: Booking;
@@ -242,21 +244,21 @@ export default function BookingForm({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="checkIn">Check-in *</Label>
-              <Input
-                id="checkIn"
-                type="date"
-                value={formData.checkIn}
-                onChange={(e) => setFormData({ ...formData, checkIn: e.target.value })}
+              <Label>Check-in *</Label>
+              <DatePicker
+                date={formData.checkIn ? parse(formData.checkIn, 'yyyy-MM-dd', new Date()) : undefined}
+                onSelect={(date) => setFormData({ ...formData, checkIn: date ? format(date, 'yyyy-MM-dd') : '' })}
+                placeholder="Select check-in date"
+                minDate={new Date()}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="checkOut">Check-out *</Label>
-              <Input
-                id="checkOut"
-                type="date"
-                value={formData.checkOut}
-                onChange={(e) => setFormData({ ...formData, checkOut: e.target.value })}
+              <Label>Check-out *</Label>
+              <DatePicker
+                date={formData.checkOut ? parse(formData.checkOut, 'yyyy-MM-dd', new Date()) : undefined}
+                onSelect={(date) => setFormData({ ...formData, checkOut: date ? format(date, 'yyyy-MM-dd') : '' })}
+                placeholder="Select check-out date"
+                minDate={formData.checkIn ? parse(formData.checkIn, 'yyyy-MM-dd', new Date()) : new Date()}
               />
             </div>
           </div>
