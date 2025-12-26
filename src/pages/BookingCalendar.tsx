@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { EventClickArg, DateSelectArg } from '@fullcalendar/core';
+import { EventClickArg, DateSelectArg, DateClickArg } from '@fullcalendar/core';
 import { useData } from '@/contexts/DataContext';
 import { Booking } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -77,7 +77,7 @@ export default function BookingCalendar() {
     setShowBookingForm(true);
   };
 
-  const handleDateClick = (dateClickInfo: any) => {
+  const handleDateClick = (dateClickInfo: DateClickArg) => {
     // Handle single date click (useful for mobile)
     const clickedDate = dateClickInfo.dateStr;
     const nextDay = new Date(dateClickInfo.date);
