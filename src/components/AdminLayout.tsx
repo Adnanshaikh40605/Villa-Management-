@@ -120,7 +120,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header with logo */}
         <header className="flex items-center justify-between h-16 px-4 sm:px-6 bg-card border-b border-border">
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 flex-1 lg:flex-initial">
             <Button
               variant="ghost"
               size="icon"
@@ -129,12 +129,13 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             >
               <Menu className="h-5 w-5" />
             </Button>
-            <img 
-              src="/vacationbna-logo.svg" 
-              alt="VacationBNA" 
-              className="h-8 sm:h-10 w-auto"
-            />
-            <h1 className="text-lg sm:text-xl font-semibold text-foreground hidden md:block">Villa Admin</h1>
+            <div className="flex-1 flex justify-center lg:justify-start lg:flex-initial">
+              <img 
+                src="/vacationbna-logo.svg" 
+                alt="VacationBNA" 
+                className="h-8 sm:h-10 w-auto"
+              />
+            </div>
           </div>
           <Button variant="outline" size="sm" onClick={logout}>
             <LogOut className="h-4 w-4 mr-0 sm:mr-2" />
