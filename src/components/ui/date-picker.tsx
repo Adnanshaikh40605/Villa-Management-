@@ -1,6 +1,6 @@
 import * as React from "react"
 import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import { CalendarIcon } from "@heroicons/react/24/outline"
 import { DayPicker } from "react-day-picker"
 import "react-day-picker/dist/style.css"
 
