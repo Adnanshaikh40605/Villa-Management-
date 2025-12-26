@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { EventClickArg, DateSelectArg, DateClickArg } from '@fullcalendar/core';
 import { useData } from '@/contexts/DataContext';
 import { Booking } from '@/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Calendar as CalendarIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import BookingForm from '@/components/BookingForm';
 import { toast } from '@/lib/toast';
 
