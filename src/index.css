@@ -152,6 +152,20 @@
   }
 }
 
+/* Hide/fade past dates */
+.fc .fc-day-past {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.fc .fc-day-past .fc-daygrid-day-number {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.fc .fc-day-other {
+  opacity: 0.4;
+}
+
 .fc-event-booked {
   background-color: hsl(var(--booked)) !important;
   border-color: hsl(var(--booked)) !important;

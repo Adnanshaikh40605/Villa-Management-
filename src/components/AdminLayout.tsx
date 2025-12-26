@@ -118,20 +118,28 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
 
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Mobile header */}
-        <header className="lg:hidden flex items-center justify-between h-16 px-4 bg-card border-b border-border">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(true)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Building2 className="h-6 w-6 text-primary" />
-            <span className="font-bold">Villa Admin</span>
+        {/* Header with logo */}
+        <header className="flex items-center justify-between h-16 px-4 sm:px-6 bg-card border-b border-border">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+            <img 
+              src="/vacationbna-logo.svg" 
+              alt="VacationBNA" 
+              className="h-8 sm:h-10 w-auto"
+            />
+            <h1 className="text-lg sm:text-xl font-semibold text-foreground hidden md:block">Villa Admin</h1>
           </div>
-          <div className="w-10" /> {/* Spacer for centering */}
+          <Button variant="outline" size="sm" onClick={logout}>
+            <LogOut className="h-4 w-4 mr-0 sm:mr-2" />
+            <span className="hidden sm:inline">Logout</span>
+          </Button>
         </header>
 
         {/* Page content */}
