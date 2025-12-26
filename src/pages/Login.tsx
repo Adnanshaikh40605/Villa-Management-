@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Loader2, Eye, EyeOff } from 'lucide-react';
+import { BuildingOffice2Icon, ArrowPathIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 import { toast } from '@/lib/toast';
 
 export default function Login() {
@@ -19,7 +19,7 @@ export default function Login() {
   if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <ArrowPathIcon className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -49,7 +49,7 @@ export default function Login() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 h-14 w-14 rounded-full bg-primary flex items-center justify-center">
-            <Building2 className="h-8 w-8 text-primary-foreground" />
+            <BuildingOffice2Icon className="h-8 w-8 text-primary-foreground" />
           </div>
           <CardTitle className="text-2xl font-bold">Villa Admin</CardTitle>
           <CardDescription>
@@ -90,9 +90,9 @@ export default function Login() {
                   tabIndex={-1}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
+                    <EyeSlashIcon className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-4 w-4" />
+                    <EyeIcon className="h-4 w-4" />
                   )}
                 </button>
               </div>
@@ -100,7 +100,7 @@ export default function Login() {
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <ArrowPathIcon className="mr-2 h-4 w-4 animate-spin" />
                   Signing in...
                 </>
               ) : (

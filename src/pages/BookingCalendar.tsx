@@ -24,7 +24,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus } from 'lucide-react';
+import { PlusIcon } from '@heroicons/react/24/outline';
 import BookingForm from '@/components/BookingForm';
 import { toast } from '@/lib/toast';
 
@@ -137,7 +137,7 @@ export default function BookingCalendar() {
           </Select>
 
           <Button onClick={handleAddBooking}>
-            <Plus className="h-4 w-4 mr-1" />
+            <PlusIcon className="h-4 w-4 mr-1" />
             <span className="hidden sm:inline">Add Booking</span>
           </Button>
         </div>

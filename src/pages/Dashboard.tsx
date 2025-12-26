@@ -1,7 +1,8 @@
 import React from 'react';
 import { useData } from '@/contexts/DataContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, CalendarCheck, CalendarX, Home } from 'lucide-react';
+import { BuildingOffice2Icon, CalendarIcon } from '@heroicons/react/24/outline';
+import { CalendarDaysIcon, HomeIcon } from '@heroicons/react/24/solid';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
@@ -26,28 +27,28 @@ export default function Dashboard() {
     {
       title: 'Total Villas',
       value: villas.length,
-      icon: Building2,
+      icon: BuildingOffice2Icon,
       color: 'bg-primary',
       link: '/villas',
     },
     {
       title: "Today's Check-ins",
       value: todayCheckIns.length,
-      icon: CalendarCheck,
+      icon: CalendarDaysIcon,
       color: 'bg-available',
       link: '/bookings',
     },
     {
       title: "Today's Check-outs",
       value: todayCheckOuts.length,
-      icon: CalendarX,
+      icon: CalendarIcon,
       color: 'bg-maintenance',
       link: '/bookings',
     },
     {
       title: 'Currently Booked',
       value: currentlyBookedVillas,
-      icon: Home,
+      icon: HomeIcon,
       color: 'bg-booked',
       link: '/calendar',
     },
@@ -89,7 +90,7 @@ export default function Dashboard() {
         <CardContent className="flex flex-wrap gap-3">
           <Button asChild>
             <Link to="/calendar">
-              <CalendarCheck className="mr-2 h-4 w-4" />
+              <CalendarDaysIcon className="mr-2 h-4 w-4" />
               View Calendar
             </Link>
           </Button>
@@ -112,7 +113,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <CalendarCheck className="h-5 w-5 text-available" />
+              <CalendarDaysIcon className="h-5 w-5 text-available" />
               Today's Check-ins
             </CardTitle>
           </CardHeader>
@@ -145,7 +146,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <CalendarX className="h-5 w-5 text-maintenance" />
+              <CalendarIcon className="h-5 w-5 text-maintenance" />
               Today's Check-outs
             </CardTitle>
           </CardHeader>

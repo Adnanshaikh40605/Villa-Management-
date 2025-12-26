@@ -4,6 +4,7 @@ import { villasService, Villa as ApiVilla } from '@/services/villas';
 import { bookingsService, Booking as ApiBooking } from '@/services/bookings';
 import { handleApiError } from '@/services/api';
 import { toast } from '@/lib/toast';
+import { useAuth } from './AuthContext';
 
 interface DataContextType {
   villas: Villa[];
@@ -51,6 +52,7 @@ const convertApiBooking = (apiBooking: ApiBooking): Booking => ({
 });
 
 export function DataProvider({ children }: { children: ReactNode }) {
+  const { isAuthenticated } = useAuth();
   const [villas, setVillas] = useState<Villa[]>([]);
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -91,7 +93,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshData();
-  }, []);
+  }, [isAuthenticated]);
 
   const addVilla = async (villaData: Omit<Villa, 'id'>): Promise<Villa | null> => {
     try {

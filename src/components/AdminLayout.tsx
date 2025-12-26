@@ -2,14 +2,14 @@ import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import {
-  LayoutDashboard,
-  Calendar,
-  Building2,
-  List,
-  LogOut,
-  Menu,
-  X,
-} from 'lucide-react';
+  Squares2X2Icon,
+  CalendarIcon,
+  BuildingOffice2Icon,
+  ListBulletIcon,
+  ArrowRightOnRectangleIcon,
+  Bars3Icon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -18,10 +18,10 @@ interface AdminLayoutProps {
 }
 
 const navItems = [
-  { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/calendar', icon: Calendar, label: 'Calendar' },
-  { to: '/villas', icon: Building2, label: 'Villas' },
-  { to: '/bookings', icon: List, label: 'Bookings' },
+  { to: '/', icon: Squares2X2Icon, label: 'Dashboard' },
+  { to: '/calendar', icon: CalendarIcon, label: 'Calendar' },
+  { to: '/villas', icon: BuildingOffice2Icon, label: 'Villas' },
+  { to: '/bookings', icon: ListBulletIcon, label: 'Bookings' },
 ];
 
 export default function AdminLayout({ children }: AdminLayoutProps) {
@@ -51,7 +51,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
           <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-md bg-sidebar-primary flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-sidebar-primary-foreground" />
+                <BuildingOffice2Icon className="h-5 w-5 text-sidebar-primary-foreground" />
               </div>
               <span className="font-bold text-lg">Villa Admin</span>
             </div>
@@ -61,7 +61,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               className="lg:hidden text-sidebar-foreground hover:bg-sidebar-accent"
               onClick={() => setSidebarOpen(false)}
             >
-              <X className="h-5 w-5" />
+              <XMarkIcon className="h-5 w-5" />
             </Button>
           </div>
 
@@ -109,7 +109,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
                 onClick={logout}
                 title="Logout"
               >
-                <LogOut className="h-4 w-4" />
+                <ArrowRightOnRectangleIcon className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -127,7 +127,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               className="lg:hidden"
               onClick={() => setSidebarOpen(true)}
             >
-              <Menu className="h-5 w-5" />
+              <Bars3Icon className="h-5 w-5" />
             </Button>
             <div className="flex-1 flex justify-center lg:justify-start lg:flex-initial">
               <img 
@@ -138,7 +138,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </div>
           </div>
           <Button variant="outline" size="sm" onClick={logout}>
-            <LogOut className="h-4 w-4 mr-0 sm:mr-2" />
+            <ArrowRightOnRectangleIcon className="h-4 w-4 mr-0 sm:mr-2" />
             <span className="hidden sm:inline">Logout</span>
           </Button>
         </header>

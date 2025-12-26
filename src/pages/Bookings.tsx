@@ -30,7 +30,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Search, Edit, Trash2, Phone, Calendar, Download } from 'lucide-react';
+import { PlusIcon, MagnifyingGlassIcon, PencilIcon, TrashIcon, PhoneIcon, CalendarIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import BookingForm from '@/components/BookingForm';
 import { toast } from '@/lib/toast';
 import { format } from 'date-fns';
@@ -157,11 +157,11 @@ export default function Bookings() {
 
         <div className="flex gap-2">
           <Button variant="outline" onClick={exportPhoneNumbers}>
-            <Download className="h-4 w-4 mr-1" />
+            <ArrowDownTrayIcon className="h-4 w-4 mr-1" />
             <span className="hidden sm:inline">Export </span>Excel
           </Button>
           <Button onClick={handleAddBooking}>
-            <Plus className="h-4 w-4 mr-1" />
+            <PlusIcon className="h-4 w-4 mr-1" />
             Add Booking
           </Button>
         </div>
@@ -173,7 +173,7 @@ export default function Bookings() {
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search by name or phone..."
                   value={searchQuery}
@@ -263,14 +263,14 @@ export default function Bookings() {
                               size="icon"
                               onClick={() => handleEdit(booking)}
                             >
-                              <Edit className="h-4 w-4" />
+                              <PencilIcon className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => setBookingToDelete(booking)}
                             >
-                              <Trash2 className="h-4 w-4 text-destructive" />
+                              <TrashIcon className="h-4 w-4 text-destructive" />
                             </Button>
                           </div>
                         </TableCell>
@@ -318,12 +318,12 @@ export default function Bookings() {
                   <div className="space-y-2 text-sm">
                     {booking.clientPhone && (
                       <div className="flex items-center gap-2 text-muted-foreground">
-                        <Phone className="h-4 w-4" />
+                        <PhoneIcon className="h-4 w-4" />
                         {booking.clientPhone}
                       </div>
                     )}
                     <div className="flex items-center gap-2 text-muted-foreground">
-                      <Calendar className="h-4 w-4" />
+                      <CalendarIcon className="h-4 w-4" />
                       {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
                     </div>
                   </div>
@@ -335,7 +335,7 @@ export default function Bookings() {
                       className="flex-1"
                       onClick={() => handleEdit(booking)}
                     >
-                      <Edit className="h-4 w-4 mr-1" />
+                      <PencilIcon className="h-4 w-4 mr-1" />
                       Edit
                     </Button>
                     <Button
@@ -343,7 +343,7 @@ export default function Bookings() {
                       size="sm"
                       onClick={() => setBookingToDelete(booking)}
                     >
-                      <Trash2 className="h-4 w-4 text-destructive" />
+                      <TrashIcon className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
                 </CardContent>

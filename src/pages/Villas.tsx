@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Building2, Users, IndianRupee, Edit, Wrench } from 'lucide-react';
+import { BuildingOffice2Icon, UsersIcon, CurrencyRupeeIcon, PencilIcon, WrenchScrewdriverIcon } from '@heroicons/react/24/outline';
 import { toast } from '@/lib/toast';
 
 export default function Villas() {
@@ -113,7 +113,7 @@ export default function Villas() {
             <CardHeader className="flex flex-row items-start justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <Building2 className="h-6 w-6 text-primary" />
+                  <BuildingOffice2Icon className="h-6 w-6 text-primary" />
                 </div>
                 <div>
                   <CardTitle className="text-lg">{villa.name}</CardTitle>
@@ -130,13 +130,13 @@ export default function Villas() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center gap-2">
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <UsersIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
                     <span className="font-medium">{villa.maxGuests}</span> guests max
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <IndianRupee className="h-4 w-4 text-muted-foreground" />
+                  <CurrencyRupeeIcon className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">
                     <span className="font-medium">₹{villa.pricePerNight.toLocaleString()}</span>/night
                   </span>
@@ -145,7 +145,7 @@ export default function Villas() {
 
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={() => handleEdit(villa)}>
-                  <Edit className="h-4 w-4 mr-1" />
+                  <PencilIcon className="h-4 w-4 mr-1" />
                   Edit
                 </Button>
                 <Button
@@ -153,7 +153,7 @@ export default function Villas() {
                   size="sm"
                   onClick={() => toggleMaintenance(villa)}
                 >
-                  <Wrench className="h-4 w-4 mr-1" />
+                  <WrenchScrewdriverIcon className="h-4 w-4 mr-1" />
                   {villa.status === 'active' ? 'Set Maintenance' : 'Set Active'}
                 </Button>
               </div>
