@@ -77,6 +77,21 @@ export default function BookingCalendar() {
     setShowBookingForm(true);
   };
 
+  const handleDateClick = (dateClickInfo: any) => {
+    // Handle single date click (useful for mobile)
+    const clickedDate = dateClickInfo.dateStr;
+    const nextDay = new Date(dateClickInfo.date);
+    nextDay.setDate(nextDay.getDate() + 1);
+    const nextDayStr = nextDay.toISOString().split('T')[0];
+    
+    setSelectedBooking(undefined);
+    setNewBookingDates({
+      checkIn: clickedDate,
+      checkOut: nextDayStr,
+    });
+    setShowBookingForm(true);
+  };
+
   const handleAddBooking = () => {
     setSelectedBooking(undefined);
     setNewBookingDates(null);
@@ -158,6 +173,7 @@ export default function BookingCalendar() {
             selectable={true}
             selectMirror={true}
             select={handleDateSelect}
+            dateClick={handleDateClick}
             eventClick={handleEventClick}
             contentHeight={600}
             dayMaxEvents={3}
