@@ -30,10 +30,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Plus, Search, Edit, Trash2, Phone, Calendar } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Phone, Calendar, Download } from 'lucide-react';
 import BookingForm from '@/components/BookingForm';
 import { toast } from '@/lib/toast';
 import { format } from 'date-fns';
+import * as XLSX from 'xlsx';
 
 export default function Bookings() {
   const { villas, bookings, deleteBooking, getVillaById } = useData();
@@ -106,6 +107,44 @@ export default function Bookings() {
     }
   };
 
+  const exportPhoneNumbers = () => {
+    // Get all phone numbers from filtered bookings
+    const phoneNumbers = filteredBookings
+      .filter(booking => booking.clientPhone) // Only include bookings with phone numbers
+      .map(booking => ({
+        'Client Name': booking.clientName,
+        'Phone Number': booking.clientPhone,
+      }));
+
+    if (phoneNumbers.length === 0) {
+      toast({ 
+        title: 'No Phone Numbers', 
+        description: 'No bookings with phone numbers found.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(phoneNumbers);
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Phone Numbers');
+    
+    // Generate filename with current date
+    const date = new Date().toISOString().split('T')[0];
+    const filename = `client-phone-numbers-${date}.xlsx`;
+    
+    // Download file
+    XLSX.writeFile(wb, filename);
+    
+    toast({ 
+      title: 'Export Successful', 
+      description: `Downloaded ${phoneNumbers.length} phone numbers.` 
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -116,10 +155,16 @@ export default function Bookings() {
           </p>
         </div>
 
-        <Button onClick={handleAddBooking}>
-          <Plus className="h-4 w-4 mr-1" />
-          Add Booking
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={exportPhoneNumbers}>
+            <Download className="h-4 w-4 mr-1" />
+            <span className="hidden sm:inline">Export </span>Excel
+          </Button>
+          <Button onClick={handleAddBooking}>
+            <Plus className="h-4 w-4 mr-1" />
+            Add Booking
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
