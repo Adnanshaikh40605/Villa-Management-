@@ -42,16 +42,18 @@ export function DatePicker({
         <Button
           variant={"outline"}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left font-normal text-sm sm:text-base truncate",
             !date && "text-muted-foreground"
           )}
           disabled={disabled}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? format(date, "dd MMMM yyyy") : <span>{placeholder}</span>}
+          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+          <span className="truncate">
+            {date ? format(date, "dd MMM yyyy") : placeholder}
+          </span>
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
+      <PopoverContent className="w-auto p-0 max-w-[calc(100vw-2rem)]" align="start">
         <DayPicker
           mode="single"
           selected={date}
@@ -61,6 +63,7 @@ export function DatePicker({
             ...(maxDate ? [{ after: maxDate }] : []),
           ]}
           initialFocus
+          className="text-sm"
         />
       </PopoverContent>
     </Popover>

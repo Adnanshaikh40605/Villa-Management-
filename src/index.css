@@ -125,6 +125,33 @@
   @apply text-lg font-semibold;
 }
 
+/* Mobile responsive calendar */
+@media (max-width: 640px) {
+  .fc .fc-toolbar-title {
+    @apply text-base;
+  }
+  
+  .fc .fc-button {
+    @apply text-xs px-2 py-1;
+  }
+  
+  .fc .fc-daygrid-day-number {
+    @apply text-xs;
+  }
+  
+  .fc .fc-event {
+    @apply text-xs;
+    font-size: 0.7rem !important;
+    padding: 1px 2px !important;
+    min-height: 18px !important;
+  }
+  
+  .fc .fc-event-title {
+    @apply truncate;
+    display: block !important;
+  }
+}
+
 .fc-event-booked {
   background-color: hsl(var(--booked)) !important;
   border-color: hsl(var(--booked)) !important;

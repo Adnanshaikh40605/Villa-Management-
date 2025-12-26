@@ -90,12 +90,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    // Small delay to ensure auth context has initialized
-    const timer = setTimeout(() => {
-      refreshData();
-    }, 100);
-    
-    return () => clearTimeout(timer);
+    refreshData();
   }, []);
 
   const addVilla = async (villaData: Omit<Villa, 'id'>): Promise<Villa | null> => {

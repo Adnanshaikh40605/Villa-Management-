@@ -175,8 +175,10 @@ export default function BookingCalendar() {
             select={handleDateSelect}
             dateClick={handleDateClick}
             eventClick={handleEventClick}
-            contentHeight={600}
-            dayMaxEvents={3}
+            height="auto"
+            contentHeight="auto"
+            aspectRatio={1.5}
+            dayMaxEvents={true}
             eventDisplay="block"
             eventTimeFormat={{
               hour: 'numeric',
