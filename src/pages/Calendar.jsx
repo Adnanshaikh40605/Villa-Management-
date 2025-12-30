@@ -64,18 +64,18 @@ export default function Calendar() {
   }
 
   return (
-    <div className="space-y-4 md:space-y-6">
+    <div className="space-y-3 md:space-y-4">
       {/* Page Header */}
       <div>
         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Calendar</h1>
-        <p className="mt-1 text-sm md:text-base text-gray-600">View and manage all bookings in calendar view</p>
+        <p className="mt-0.5 text-sm md:text-base text-gray-600">View and manage all bookings in calendar view</p>
       </div>
 
       {/* Villa Filter */}
       <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter by Villa:</label>
-          <div className="flex-1 flex items-center gap-3">
+          <div className="flex-1 flex items-center gap-2">
             <select
               value={selectedVilla}
               onChange={(e) => setSelectedVilla(e.target.value)}
