@@ -33,16 +33,22 @@ export default function BookingModal({ isOpen, onClose, selectedDates, villas })
     }
 
     try {
-      await createBooking({
+      const bookingData = {
         villa: formData.villa,
-        client_name: formData.client_name,
-        client_phone: formData.client_phone,
         guests: parseInt(formData.guests),
         check_in: format(selectedDates.start, 'yyyy-MM-dd'),
         check_out: format(selectedDates.end, 'yyyy-MM-dd'),
         status: formData.status,
         payment_status: formData.payment_status,
-      }).unwrap()
+      }
+
+      // Only include client details if status is 'booked'
+      if (formData.status === 'booked') {
+        bookingData.client_name = formData.client_name
+        bookingData.client_phone = formData.client_phone
+      }
+
+      await createBooking(bookingData).unwrap()
 
       toast.success('Booking created successfully!')
       onClose()
