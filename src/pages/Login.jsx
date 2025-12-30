@@ -116,18 +116,6 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                />
-                <span className="ml-2 text-sm text-gray-600">Remember me</span>
-              </label>
-              <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-700">
-                Forgot password?
-              </a>
-            </div>
 
             <Button
               type="submit"
@@ -140,13 +128,7 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
-              <strong>Demo credentials:</strong><br />
-              Username: <code className="bg-gray-100 px-2 py-1 rounded">admin</code><br />
-              Password: <code className="bg-gray-100 px-2 py-1 rounded">admin123</code>
-            </p>
-          </div>
+
         </div>
       </div>
     </div>
