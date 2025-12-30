@@ -8,6 +8,7 @@ import MainLayout from '@/components/layout/MainLayout'
 // Pages
 import Dashboard from '@/pages/Dashboard'
 import Calendar from '@/pages/Calendar'
+import CreateBooking from '@/pages/CreateBooking'
 import Villas from '@/pages/Villas'
 import Bookings from '@/pages/Bookings'
 import Analytics from '@/pages/Analytics'
@@ -51,6 +52,7 @@ function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="calendar" element={<Calendar />} />
+        <Route path="bookings/create" element={<CreateBooking />} />
         <Route path="villas" element={<Villas />} />
         <Route path="bookings" element={<Bookings />} />
         <Route path="analytics" element={<Analytics />} />

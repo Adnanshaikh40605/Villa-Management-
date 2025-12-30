@@ -1,4 +1,6 @@
+
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
@@ -8,15 +10,13 @@ import { useGetVillasQuery } from '@/services/api/villaApi'
 import { format, startOfMonth, endOfMonth, addMonths } from 'date-fns'
 import Card from '@/components/common/Card'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import BookingModal from '@/components/booking/BookingModal'
 import BookingDetailsModal from '@/components/booking/BookingDetailsModal'
 
 export default function Calendar() {
+  const navigate = useNavigate()
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedVilla, setSelectedVilla] = useState('')
-  const [bookingModalOpen, setBookingModalOpen] = useState(false)
   const [bookingDetailsOpen, setBookingDetailsOpen] = useState(false)
-  const [selectedDates, setSelectedDates] = useState(null)
   const [selectedBooking, setSelectedBooking] = useState(null)
   
   const start = format(startOfMonth(addMonths(currentDate, -1)), 'yyyy-MM-dd')
@@ -58,11 +58,14 @@ export default function Calendar() {
   }
 
   const handleDateSelect = (selectInfo) => {
-    setSelectedDates({
-      start: selectInfo.start,
-      end: selectInfo.end,
+    navigate('/bookings/create', {
+      state: {
+        selectedDates: {
+          start: selectInfo.start,
+          end: selectInfo.end,
+        }
+      }
     })
-    setBookingModalOpen(true)
   }
 
   if (bookingsLoading || villasLoading) {
@@ -155,17 +158,6 @@ export default function Calendar() {
         </div>
         </div>
       </Card>
-
-      {/* Booking Modal */}
-      <BookingModal
-        isOpen={bookingModalOpen}
-        onClose={() => {
-          setBookingModalOpen(false)
-          setSelectedDates(null)
-        }}
-        selectedDates={selectedDates}
-        villas={villas}
-      />
 
       {/* Booking Details Modal */}
       <BookingDetailsModal
