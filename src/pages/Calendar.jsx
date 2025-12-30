@@ -9,12 +9,15 @@ import { format, startOfMonth, endOfMonth, addMonths } from 'date-fns'
 import Card from '@/components/common/Card'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import BookingModal from '@/components/booking/BookingModal'
+import BookingDetailsModal from '@/components/booking/BookingDetailsModal'
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
   const [selectedVilla, setSelectedVilla] = useState('')
   const [bookingModalOpen, setBookingModalOpen] = useState(false)
+  const [bookingDetailsOpen, setBookingDetailsOpen] = useState(false)
   const [selectedDates, setSelectedDates] = useState(null)
+  const [selectedBooking, setSelectedBooking] = useState(null)
   
   const start = format(startOfMonth(addMonths(currentDate, -1)), 'yyyy-MM-dd')
   const end = format(endOfMonth(addMonths(currentDate, 1)), 'yyyy-MM-dd')
@@ -44,7 +47,14 @@ export default function Calendar() {
 
   const handleEventClick = (info) => {
     const { villa, client, status } = info.event.extendedProps
-    alert(`Villa: ${villa}\nClient: ${client}\nStatus: ${status}\nDates: ${info.event.start.toLocaleDateString()} - ${info.event.end.toLocaleDateString()}`)
+    setSelectedBooking({
+      villa,
+      client,
+      status,
+      checkIn: info.event.start,
+      checkOut: info.event.end,
+    })
+    setBookingDetailsOpen(true)
   }
 
   const handleDateSelect = (selectInfo) => {
@@ -100,14 +110,14 @@ export default function Calendar() {
         <div className="calendar-container">
           <FullCalendar
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-            initialView={window.innerWidth < 768 ? 'timeGridDay' : 'dayGridMonth'}
+            initialView={window.innerWidth < 768 ? 'dayGridMonth' : 'dayGridMonth'}
             headerToolbar={{
               left: 'prev,next today',
               center: 'title',
-              right: window.innerWidth < 768 ? 'timeGridDay,dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay',
+              right: window.innerWidth < 768 ? 'dayGridMonth' : 'dayGridMonth,timeGridWeek,timeGridDay',
             }}
             events={events}
-            editable={true}
+            editable={false}
             selectable={true}
             selectMirror={true}
             dayMaxEvents={true}
@@ -116,7 +126,7 @@ export default function Calendar() {
             select={handleDateSelect}
             height="auto"
             contentHeight="auto"
-            aspectRatio={window.innerWidth < 768 ? 1.2 : 1.8}
+            aspectRatio={window.innerWidth < 768 ? 1 : 1.8}
             eventDisplay="block"
             eventTimeFormat={{
               hour: '2-digit',
@@ -136,6 +146,11 @@ export default function Calendar() {
               today.setHours(0, 0, 0, 0)
               return selectInfo.start >= today
             }}
+            longPressDelay={0}
+            eventLongPressDelay={0}
+            selectLongPressDelay={0}
+            touchDelay={0}
+          />
           />
         </div>
       </Card>
@@ -163,6 +178,16 @@ export default function Calendar() {
         }}
         selectedDates={selectedDates}
         villas={villas}
+      />
+
+      {/* Booking Details Modal */}
+      <BookingDetailsModal
+        isOpen={bookingDetailsOpen}
+        onClose={() => {
+          setBookingDetailsOpen(false)
+          setSelectedBooking(null)
+        }}
+        booking={selectedBooking}
       />
     </div>
   )
