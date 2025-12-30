@@ -153,19 +153,6 @@ export default function Calendar() {
           />
           />
         </div>
-      </Card>
-
-      {/* Legend */}
-      <Card title="Legend">
-        <div className="flex flex-wrap gap-4">
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-blue-500 rounded mr-2"></div>
-            <span className="text-sm text-gray-700">Booked</span>
-          </div>
-          <div className="flex items-center">
-            <div className="w-4 h-4 bg-gray-500 rounded mr-2"></div>
-            <span className="text-sm text-gray-700">Blocked</span>
-          </div>
         </div>
       </Card>
 
