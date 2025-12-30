@@ -60,10 +60,13 @@ export default function Sidebar() {
         <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
           {sidebarOpen && (
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">V</span>
-              </div>
+              <img src="/logo-512_512 1.png" alt="Villa Logo" className="w-8 h-8 object-contain" />
               <span className="font-bold text-xl text-gray-900">Villa</span>
+            </div>
+          )}
+          {!sidebarOpen && (
+            <div className="flex items-center justify-center w-full">
+              <img src="/logo-512_512 1.png" alt="Villa Logo" className="w-8 h-8 object-contain" />
             </div>
           )}
           
