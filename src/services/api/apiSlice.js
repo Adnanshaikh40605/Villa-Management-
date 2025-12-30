@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://localhost:8000/api/v1',
+  baseUrl: import.meta.env.VITE_API_BASE_URL || 'https://villa-backend-management-production.up.railway.app/api/v1',
   prepareHeaders: (headers, { getState }) => {
     const token = getState().auth.token
     if (token) {
