@@ -5,10 +5,12 @@ import Card from '@/components/common/Card'
 import Button from '@/components/common/Button'
 import Badge from '@/components/common/Badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import VillaModal from '@/components/villa/VillaModal'
 import toast from 'react-hot-toast'
 
 export default function Villas() {
   const [statusFilter, setStatusFilter] = useState('')
+  const [villaModalOpen, setVillaModalOpen] = useState(false)
   const { data, isLoading } = useGetVillasQuery({ status: statusFilter })
   const [deleteVilla] = useDeleteVillaMutation()
 
@@ -41,7 +43,7 @@ export default function Villas() {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Villas</h1>
           <p className="mt-1 text-gray-600">Manage your villa properties</p>
         </div>
-        <Button variant="primary" icon={PlusIcon}>
+        <Button variant="primary" icon={PlusIcon} onClick={() => setVillaModalOpen(true)}>
           Add Villa
         </Button>
       </div>
@@ -128,6 +130,12 @@ export default function Villas() {
           ))}
         </div>
       )}
+
+      {/* Villa Modal */}
+      <VillaModal
+        isOpen={villaModalOpen}
+        onClose={() => setVillaModalOpen(false)}
+      />
     </div>
   )
 }
