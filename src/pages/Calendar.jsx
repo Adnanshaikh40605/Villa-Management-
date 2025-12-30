@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import FullCalendar from '@fullcalendar/react'
@@ -154,10 +153,8 @@ export default function Calendar() {
             selectLongPressDelay={0}
             touchDelay={0}
           />
-          />
         </div>
-        </div>
-      </Card>
+      </Card> 
 
       {/* Booking Details Modal */}
       <BookingDetailsModal
