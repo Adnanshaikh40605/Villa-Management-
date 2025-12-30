@@ -9,12 +9,10 @@ export default function BookingModal({ isOpen, onClose, selectedDates, villas })
   const [formData, setFormData] = useState({
     villa: '',
     client_name: '',
-    client_email: '',
     client_phone: '',
     guests: 1,
     status: 'booked',
     payment_status: 'pending',
-    notes: '',
   })
 
   const [createBooking, { isLoading }] = useCreateBookingMutation()
@@ -38,14 +36,12 @@ export default function BookingModal({ isOpen, onClose, selectedDates, villas })
       await createBooking({
         villa: formData.villa,
         client_name: formData.client_name,
-        client_email: formData.client_email,
         client_phone: formData.client_phone,
         guests: parseInt(formData.guests),
         check_in: format(selectedDates.start, 'yyyy-MM-dd'),
         check_out: format(selectedDates.end, 'yyyy-MM-dd'),
         status: formData.status,
         payment_status: formData.payment_status,
-        notes: formData.notes,
       }).unwrap()
 
       toast.success('Booking created successfully!')
@@ -54,12 +50,10 @@ export default function BookingModal({ isOpen, onClose, selectedDates, villas })
       setFormData({
         villa: '',
         client_name: '',
-        client_email: '',
         client_phone: '',
         guests: 1,
         status: 'booked',
         payment_status: 'pending',
-        notes: '',
       })
     } catch (error) {
       console.error('Booking error:', error)
@@ -166,20 +160,6 @@ export default function BookingModal({ isOpen, onClose, selectedDates, villas })
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
-              </label>
-              <input
-                type="email"
-                name="client_email"
-                value={formData.client_email}
-                onChange={handleChange}
-                className="input"
-                placeholder="john@example.com"
-              />
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -213,21 +193,6 @@ export default function BookingModal({ isOpen, onClose, selectedDates, villas })
             </div>
           </>
         )}
-
-        {/* Notes */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Notes
-          </label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            rows="3"
-            className="input"
-            placeholder="Additional notes..."
-          />
-        </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">

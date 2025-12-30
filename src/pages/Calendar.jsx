@@ -65,11 +65,6 @@ export default function Calendar() {
 
   return (
     <div className="space-y-3 md:space-y-4">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">Calendar</h1>
-        <p className="mt-0.5 text-sm md:text-base text-gray-600">View and manage all bookings in calendar view</p>
-      </div>
 
       {/* Villa Filter */}
       <Card>
