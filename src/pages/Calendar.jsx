@@ -70,6 +70,22 @@ export default function Calendar() {
     })
   }
 
+  const handleDateClick = (info) => {
+    // Navigate to create booking for the clicked date
+    // Set end date to the next day for a 1-night default
+    const endDate = new Date(info.date)
+    endDate.setDate(endDate.getDate() + 1)
+    
+    navigate('/bookings/create', {
+      state: {
+        selectedDates: {
+          start: info.date,
+          end: endDate,
+        }
+      }
+    })
+  }
+
   // Navigation Handlers
   const handlePrev = () => {
     calendarRef.current.getApi().prev()
@@ -168,6 +184,7 @@ export default function Calendar() {
             weekends={true}
             eventClick={handleEventClick}
             select={handleDateSelect}
+            dateClick={handleDateClick}
             datesSet={handleDatesSet}
             height="auto"
             contentHeight="auto"
