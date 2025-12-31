@@ -4,6 +4,7 @@ import { selectIsAuthenticated } from '@/features/auth/authSlice'
 
 // Layout
 import MainLayout from '@/components/layout/MainLayout'
+import InstallPWA from '@/components/common/InstallPWA'
 
 // Pages
 import Dashboard from '@/pages/Dashboard'
@@ -30,7 +31,9 @@ const PublicRoute = ({ children }) => {
 
 function App() {
   return (
-    <Routes>
+    <>
+      <InstallPWA />
+      <Routes>
       {/* Public Routes */}
       <Route
         path="/login"
@@ -62,6 +65,7 @@ function App() {
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </>
   )
 }
 

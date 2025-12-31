@@ -1,16 +1,17 @@
 import { NavLink } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import {
-  HomeIcon,
-  CalendarIcon,
-  BuildingOfficeIcon,
-  ClipboardDocumentListIcon,
-  ChartBarIcon,
-  Cog6ToothIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
+  LayoutDashboard,
+  Calendar,
+  Building2,
+  ClipboardList,
+  BarChart3,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  X
+} from 'lucide-react'
 import {
   selectSidebarOpen,
   selectMobileMenuOpen,
@@ -19,12 +20,12 @@ import {
 } from '@/features/ui/uiSlice'
 
 const navigation = [
-  { name: 'Dashboard', href: '/', icon: HomeIcon },
-  { name: 'Calendar', href: '/calendar', icon: CalendarIcon },
-  { name: 'Villas', href: '/villas', icon: BuildingOfficeIcon },
-  { name: 'Bookings', href: '/bookings', icon: ClipboardDocumentListIcon },
-  { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
-  { name: 'Settings', href: '/settings', icon: Cog6ToothIcon },
+  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Calendar', href: '/calendar', icon: Calendar },
+  { name: 'Villas', href: '/villas', icon: Building2 },
+  { name: 'Bookings', href: '/bookings', icon: ClipboardList },
+  { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export default function Sidebar() {
@@ -52,35 +53,34 @@ export default function Sidebar() {
 
       {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-200 transition-all duration-300 ${
-          sidebarOpen ? 'w-64' : 'w-20'
+        className={`fixed inset-y-0 left-0 z-50 bg-white border-r border-gray-100 transition-all duration-300 flex flex-col ${
+          sidebarOpen ? 'w-64' : 'w-16'
         } ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-          {sidebarOpen && (
-            <div className="flex items-center space-x-2">
-              <img src="/logo-512_512 1.png" alt="Villa Logo" className="w-8 h-8 object-contain" />
-              <span className="font-bold text-xl text-gray-900">Villa</span>
+        <div className={`flex items-center h-16 px-4 border-b border-gray-100 ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
+          {sidebarOpen ? (
+            <div className="flex items-center gap-2">
+              <span className="text-xl font-bold">
+                <span className="text-red-500">Vacation</span>
+                <span className="text-blue-500">BNR</span>
+              </span>
             </div>
-          )}
-          {!sidebarOpen && (
-            <div className="flex items-center justify-center w-full">
-              <img src="/logo-512_512 1.png" alt="Villa Logo" className="w-8 h-8 object-contain" />
-            </div>
+          ) : (
+            <span className="text-xl font-bold text-red-500">V</span>
           )}
           
           {/* Mobile close button */}
           <button
             onClick={handleCloseMobileMenu}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
+            className="lg:hidden p-1 rounded-lg hover:bg-gray-50"
           >
-            <XMarkIcon className="w-6 h-6 text-gray-600" />
+            <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
           {navigation.map((item) => (
             <NavLink
               key={item.name}
@@ -88,34 +88,42 @@ export default function Sidebar() {
               end={item.href === '/'}
               onClick={handleCloseMobileMenu}
               className={({ isActive }) =>
-                `flex items-center px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+                `flex items-center px-3 py-2.5 rounded-lg transition-all duration-300 group whitespace-nowrap ${
                   isActive
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-700 hover:bg-gray-100'
-                } ${!sidebarOpen && 'justify-center'}`
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                } ${!sidebarOpen && 'justify-center px-2'}`
               }
             >
-              <item.icon className={`w-6 h-6 flex-shrink-0 ${sidebarOpen && 'mr-3'}`} />
-              {sidebarOpen && (
-                <span className="font-medium">{item.name}</span>
-              )}
+              <item.icon className={`flex-shrink-0 transition-colors ${sidebarOpen ? 'w-5 h-5 mr-3' : 'w-5 h-5'}`} />
+              <span className={`font-medium transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}>
+                {item.name}
+              </span>
             </NavLink>
           ))}
         </nav>
 
-        {/* Toggle button (desktop only) */}
-        <div className="hidden lg:block p-4 border-t border-gray-200">
+        {/* Footer Actions */}
+        <div className="p-3 border-t border-gray-100 space-y-2">
+          {/* Logout Button */}
+          <button
+            className={`w-full flex items-center px-3 py-2.5 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-gray-900 transition-all duration-300 group ${!sidebarOpen && 'justify-center px-2'}`}
+          >
+            <LogOut className={`flex-shrink-0 transition-colors ${sidebarOpen ? 'w-5 h-5 mr-3' : 'w-5 h-5'}`} />
+            <span className={`font-medium transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}>
+              Logout
+            </span>
+          </button>
+
+          {/* Collapse Toggle (Desktop) */}
           <button
             onClick={handleToggleSidebar}
-            className="w-full flex items-center justify-center px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="hidden lg:flex w-full items-center justify-center p-2 rounded-lg text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors"
           >
             {sidebarOpen ? (
-              <>
-                <ChevronLeftIcon className="w-5 h-5 mr-2" />
-                <span className="text-sm font-medium">Collapse</span>
-              </>
+              <ChevronLeft className="w-5 h-5" />
             ) : (
-              <ChevronRightIcon className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" />
             )}
           </button>
         </div>
