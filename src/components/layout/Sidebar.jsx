@@ -59,17 +59,7 @@ export default function Sidebar() {
       >
         {/* Logo */}
         <div className={`flex items-center h-16 px-4 border-b border-gray-100 ${sidebarOpen ? 'justify-between' : 'justify-center'}`}>
-          {sidebarOpen ? (
-            <div className="flex items-center gap-2">
-              <img src="/logo-512_512 1.png" alt="VacationBNR Logo" className="w-8 h-8 object-contain" />
-              <span className="text-xl font-bold">
-                <span className="text-red-500">Vacation</span>
-                <span className="text-blue-500">BNR</span>
-              </span>
-            </div>
-          ) : (
-            <img src="/logo-512_512 1.png" alt="VacationBNR Logo" className="w-8 h-8 object-contain" />
-          )}
+          <img src="/logo-512_512 1.png" alt="VacationBNR Logo" className="w-12 h-12 object-contain" />
           
           {/* Mobile close button */}
           <button

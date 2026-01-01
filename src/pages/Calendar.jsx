@@ -128,17 +128,17 @@ export default function Calendar() {
   }
 
   return (
-    <div className="space-y-3 md:space-y-4">
+    <div className="space-y-2">
 
       {/* Villa Filter */}
-      <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+      <Card className="!p-3">
+        <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-700 whitespace-nowrap">Filter by Villa:</label>
           <div className="flex-1 flex items-center gap-2">
             <select
               value={selectedVilla}
               onChange={(e) => setSelectedVilla(e.target.value)}
-              className="input flex-1 sm:max-w-xs"
+              className="input py-1.5 h-9 text-sm flex-1 sm:max-w-xs"
             >
               <option value="">All Villas</option>
               {villas.map((villa) => (
@@ -150,7 +150,7 @@ export default function Calendar() {
             {selectedVilla && (
               <button
                 onClick={() => setSelectedVilla('')}
-                className="text-sm text-primary-600 hover:text-primary-700 font-medium whitespace-nowrap"
+                className="text-xs sm:text-sm text-primary-600 hover:text-primary-700 font-medium whitespace-nowrap px-2"
               >
                 Clear
               </button>
@@ -160,7 +160,7 @@ export default function Calendar() {
       </Card>
 
       {/* Calendar */}
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden !p-0">
         {/* Custom Header */}
         <CalendarHeader 
           currentDate={currentDate}
@@ -170,7 +170,7 @@ export default function Calendar() {
           onDateChange={handleDateChange}
         />
         
-        <div className="calendar-container" {...handlers}>
+        <div className="calendar-container p-2" {...handlers}>
           <FullCalendar
             ref={calendarRef}
             plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

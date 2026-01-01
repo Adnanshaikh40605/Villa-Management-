@@ -15,20 +15,20 @@ export default function CalendarHeader({
   // Custom input for the date picker to make it look integrated
   const CustomInput = React.forwardRef(({ value, onClick }, ref) => (
     <button
-      className="flex items-center gap-2 px-4 py-2 text-xl font-bold text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+      className="flex items-center gap-2 px-2 py-1 text-lg sm:text-xl font-bold text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
       onClick={onClick}
       ref={ref}
     >
-      <CalendarDaysIcon className="w-6 h-6 text-primary-600" />
+      <CalendarDaysIcon className="w-5 h-5 text-primary-600" />
       <span>{format(currentDate, 'MMMM yyyy')}</span>
     </button>
   ))
 
   return (
-    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-white border-b border-gray-200">
+    <div className="flex items-center justify-between gap-2 p-2 sm:p-3 bg-white border-b border-gray-200">
       
-      {/* Month/Year Picker (Center on mobile, Left on desktop) */}
-      <div className="order-1 sm:order-2">
+      {/* Month/Year Picker */}
+      <div className="flex-1">
         <DatePicker
           selected={currentDate}
           onChange={(date) => onDateChange(date)}
@@ -40,46 +40,41 @@ export default function CalendarHeader({
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center gap-2 order-2 sm:order-1 w-full sm:w-auto justify-between sm:justify-start">
+      <div className="flex items-center gap-1 sm:gap-2">
         <Button 
           variant="secondary" 
           size="sm"
           onClick={onToday}
-          className="hidden sm:flex"
+          className="hidden sm:flex text-xs py-1 h-7"
         >
           Today
         </Button>
         
-        <div className="flex items-center gap-1">
+        <div className="flex items-center">
           <button
             onClick={onPrev}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+            className="p-1 sm:p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
             aria-label="Previous Month"
           >
-            <ChevronLeftIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ChevronLeftIcon className="w-5 h-5" />
           </button>
           <button
             onClick={onNext}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+            className="p-1 sm:p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
             aria-label="Next Month"
           >
-            <ChevronRightIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+            <ChevronRightIcon className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Mobile Today Button (shown on right) */}
-        <Button 
-          variant="secondary" 
-          size="sm"
-          onClick={onToday}
-          className="flex sm:hidden"
+        {/* Mobile Today Button (as icon or small text) */}
+        <button 
+            onClick={onToday}
+            className="sm:hidden text-xs font-medium text-primary-600 px-2 py-1 rounded bg-primary-50 ml-1"
         >
-          Today
-        </Button>
+            Today
+        </button>
       </div>
-
-      {/* View Switcher Placeholder (if needed in future) */}
-      <div className="order-3 hidden sm:block w-24"></div> 
     </div>
   )
 }
