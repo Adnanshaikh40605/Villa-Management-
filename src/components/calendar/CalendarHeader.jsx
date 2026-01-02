@@ -41,15 +41,6 @@ export default function CalendarHeader({
 
       {/* Navigation Controls */}
       <div className="flex items-center gap-1 sm:gap-2">
-        <Button 
-          variant="secondary" 
-          size="sm"
-          onClick={onToday}
-          className="hidden sm:flex text-xs py-1 h-7"
-        >
-          Today
-        </Button>
-        
         <div className="flex items-center">
           <button
             onClick={onPrev}
@@ -66,14 +57,6 @@ export default function CalendarHeader({
             <ChevronRightIcon className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Mobile Today Button (as icon or small text) */}
-        <button 
-            onClick={onToday}
-            className="sm:hidden text-xs font-medium text-primary-600 px-2 py-1 rounded bg-primary-50 ml-1"
-        >
-            Today
-        </button>
       </div>
     </div>
   )

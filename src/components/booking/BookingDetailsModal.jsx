@@ -14,10 +14,30 @@ export default function BookingDetailsModal({ isOpen, onClose, booking }) {
           <p className="text-base text-gray-900">{booking.villa}</p>
         </div>
 
-        {/* Client Name */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Client</label>
-          <p className="text-base text-gray-900">{booking.client}</p>
+        {/* Client Details */}
+        <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Client</label>
+              <p className="text-base text-gray-900">{booking.client}</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <p className="text-base text-gray-900">{booking.phone || 'N/A'}</p>
+            </div>
+        </div>
+        
+        {/* Additional Details */}
+        <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Guests</label>
+              <p className="text-base text-gray-900">{booking.guests || '1'}</p>
+            </div>
+             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+               <Badge variant={booking.status === 'booked' ? 'success' : 'info'}>
+                {booking.status}
+              </Badge>
+            </div>
         </div>
 
         {/* Dates */}
@@ -36,13 +56,6 @@ export default function BookingDetailsModal({ isOpen, onClose, booking }) {
           </div>
         </div>
 
-        {/* Status */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-          <Badge variant={booking.status === 'booked' ? 'success' : 'info'}>
-            {booking.status}
-          </Badge>
-        </div>
       </div>
     </Modal>
   )
