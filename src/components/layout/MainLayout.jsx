@@ -13,8 +13,8 @@ export default function MainLayout() {
       <Sidebar />
 
       {/* Main Content */}
-      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300 ${
-        sidebarOpen ? 'lg:ml-64' : 'lg:ml-16'
+      <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-500 ease-in-out ${
+        sidebarOpen ? 'lg:ml-72' : 'lg:ml-20'
       }`}>
         {/* Navbar */}
         <Navbar />
