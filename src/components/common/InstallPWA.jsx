@@ -8,6 +8,7 @@ export default function InstallPWA() {
 
   useEffect(() => {
     const handler = (e) => {
+      console.log('pwa-install: beforeinstallprompt fired', e);
       // Prevent the mini-infobar from appearing on mobile
       e.preventDefault()
       // Stash the event so it can be triggered later.
