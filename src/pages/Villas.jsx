@@ -1,20 +1,23 @@
 import { useState } from 'react'
-import { PlusIcon, BuildingOfficeIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, BuildingOfficeIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
 import { useGetVillasQuery, useDeleteVillaMutation } from '@/services/api/villaApi'
 import Card from '@/components/common/Card'
 import Button from '@/components/common/Button'
 import Badge from '@/components/common/Badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import VillaModal from '@/components/villa/VillaModal'
+import GlobalSpecialDayModal from '@/components/settings/GlobalSpecialDayModal'
 import toast from 'react-hot-toast'
 
 export default function Villas() {
   const [statusFilter, setStatusFilter] = useState('')
   const [villaModalOpen, setVillaModalOpen] = useState(false)
+  const [globalSpecialDayModalOpen, setGlobalSpecialDayModalOpen] = useState(false)
+  const [selectedVilla, setSelectedVilla] = useState(null)
   const { data, isLoading } = useGetVillasQuery({ status: statusFilter })
   const [deleteVilla] = useDeleteVillaMutation()
 
-  const villas = data?.results || data || []
+  const villas = Array.isArray(data) ? data : (data?.results || [])
 
   const handleDelete = async (id, name) => {
     if (window.confirm(`Are you sure you want to delete ${name}?`)) {
@@ -25,6 +28,16 @@ export default function Villas() {
         toast.error('Failed to delete villa')
       }
     }
+  }
+
+  const handleEdit = (villa) => {
+      setSelectedVilla(villa)
+      setVillaModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+      setVillaModalOpen(false)
+      setSelectedVilla(null)
   }
 
   if (isLoading) {
@@ -43,9 +56,14 @@ export default function Villas() {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Villas</h1>
           <p className="mt-1 text-gray-600">Manage your villa properties</p>
         </div>
-        <Button variant="primary" icon={PlusIcon} onClick={() => setVillaModalOpen(true)}>
-          Add Villa
-        </Button>
+        <div className="flex gap-2">
+            <Button variant="secondary" icon={CalendarDaysIcon} onClick={() => setGlobalSpecialDayModalOpen(true)}>
+              Add Special Day
+            </Button>
+            <Button variant="primary" icon={PlusIcon} onClick={() => setVillaModalOpen(true)}>
+              Add Villa
+            </Button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -117,6 +135,14 @@ export default function Villas() {
                   <Button variant="primary" size="sm" className="flex-1">
                     View
                   </Button>
+                   <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    className="flex-1"
+                    onClick={() => handleEdit(villa)}
+                   >
+                    Edit
+                  </Button>
                   <Button
                     variant="danger"
                     size="sm"
@@ -134,7 +160,14 @@ export default function Villas() {
       {/* Villa Modal */}
       <VillaModal
         isOpen={villaModalOpen}
-        onClose={() => setVillaModalOpen(false)}
+        onClose={handleCloseModal}
+        villa={selectedVilla}
+      />
+      
+      {/* Global Special Day Modal */}
+      <GlobalSpecialDayModal
+          isOpen={globalSpecialDayModalOpen}
+          onClose={() => setGlobalSpecialDayModalOpen(false)}
       />
     </div>
   )

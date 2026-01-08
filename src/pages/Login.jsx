@@ -34,10 +34,11 @@ export default function Login() {
         password: formData.password,
       }).unwrap()
       
-      // Store credentials in Redux and localStorage
+      // Store credentials in Redux (tokens are already stored in localStorage by authApi transformResponse)
       dispatch(setCredentials({
         user: response.user,
-        token: response.token || response.access || response.key,
+        token: response.access || response.token || response.key,
+        refreshToken: response.refresh,
       }))
       
       toast.success('Login successful!')

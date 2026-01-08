@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { format } from 'date-fns'
 
 export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }) {
+  const [checkOutDate, setCheckOutDate] = useState('')
   const [formData, setFormData] = useState({
     client_name: '',
     client_phone: '',
@@ -12,7 +13,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
 
   // Reset form when modal opens
   React.useEffect(() => {
-    if (isOpen) {
+    if (isOpen && date) {
         setFormData({
             client_name: '',
             client_phone: '',
@@ -20,11 +21,21 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
             notes: '',
             status: 'booked'
         })
+        const nextDay = new Date(date)
+        nextDay.setDate(nextDay.getDate() + 1)
+        setCheckOutDate(format(nextDay, 'yyyy-MM-dd'))
     }
-  }, [isOpen])
+  }, [isOpen, date])
 
   const handleChange = (e) => {
     const { name, value } = e.target
+    
+    // Validation for Phone Number: only numbers, max 10 digits
+    if (name === 'client_phone') {
+      if (!/^\d*$/.test(value)) return
+      if (value.length > 10) return
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -38,8 +49,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
         number_of_guests: formData.number_of_guests ? parseInt(formData.number_of_guests) : null,
         villa: villa.id,
         check_in: format(date, 'yyyy-MM-dd'),
-        // Default 1 night for now, logic can be expanded
-        check_out: format(new Date(date.getTime() + 86400000), 'yyyy-MM-dd') 
+        check_out: checkOutDate
     })
     onClose()
   }
@@ -81,6 +91,28 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
 
                 <div className="grid grid-cols-2 gap-4">
                     <div>
+                         <label className="block text-sm font-medium text-gray-700">Check-in</label>
+                         <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-500 sm:text-sm">
+                             {format(date, 'yyyy-MM-dd')}
+                         </div>
+                    </div>
+                    <div>
+                         <label htmlFor="check_out_date" className="block text-sm font-medium text-gray-700">Check-out</label>
+                         <input
+                            type="date"
+                            name="check_out_date"
+                            id="check_out_date"
+                            required
+                            min={format(new Date(date.getTime() + 86400000), 'yyyy-MM-dd')}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            value={checkOutDate}
+                            onChange={(e) => setCheckOutDate(e.target.value)}
+                         />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                    <div>
                         <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
                         <input
                             type="text"
@@ -97,8 +129,6 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
                             type="number"
                             name="number_of_guests"
                             id="number_of_guests"
-                            min="1"
-                            max={villa?.max_guests}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                             value={formData.number_of_guests}
                             onChange={handleChange}

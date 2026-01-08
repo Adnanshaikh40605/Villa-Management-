@@ -11,6 +11,7 @@ export default function CalendarTableView({
   onUpdateBooking,
   onDeleteBooking
 }) {
+  const villasList = Array.isArray(villas) ? villas : (villas?.results || [])
   const [editingCell, setEditingCell] = useState(null) // { date: Date, villaId: string }
   const [inputValue, setInputValue] = useState('')
   
@@ -97,19 +98,41 @@ export default function CalendarTableView({
     }
   }, [editingCell])
 
+
   const getVillaPrice = (date, villa) => {
     const day = date.getDay()
-    const isWeekend = day === 5 || day === 6 // Friday (5) or Saturday (6)
-    const nameLower = villa.name.toLowerCase()
     
-    // Exact logic as requested
-    if (nameLower.includes('sequel')) {
-        return isWeekend ? '₹8,000' : '₹4,000'
+    // Priority 1: Check if this date falls within any special price range
+    if (villa.special_prices && villa.special_prices.length > 0) {
+      const dateStr = format(date, 'yyyy-MM-dd')
+      
+      for (const specialPrice of villa.special_prices) {
+        const startDate = specialPrice.start_date
+        const endDate = specialPrice.end_date
+        
+        // Check if current date is within this range (inclusive)
+        if (dateStr >= startDate && dateStr <= endDate) {
+          return `₹${Math.floor(parseFloat(specialPrice.price)).toLocaleString()}`
+        }
+      }
     }
-    if (nameLower.includes('fountain')) {
-        return isWeekend ? '₹8,000' : '₹6,000'
+    
+    // Priority 2: Check if villa has weekend pricing configured and if today is a configured weekend day
+    const isConfiguredWeekend = villa.weekend_days && villa.weekend_days.includes(day)
+    
+    // Priority 3: Weekend price (if configured and today is a weekend day), then base price
+    let price = villa.price_per_night
+    
+    if (isConfiguredWeekend && villa.weekend_price) {
+        price = villa.weekend_price
     }
-    return `₹${Math.floor(villa.price_per_night).toLocaleString()}`
+    
+    // Format and return the price
+    if (!price || price === 0) {
+        return '₹0'
+    }
+    
+    return `₹${Math.floor(price).toLocaleString()}`
   }
 
   const getStatusColor = (booking) => {
@@ -135,7 +158,7 @@ export default function CalendarTableView({
             </th>
             
             {/* Villa Headers */}
-            {villas.map((villa) => (
+            {villasList.map((villa) => (
               <th 
                 key={villa.id} 
                 scope="col" 
@@ -158,7 +181,7 @@ export default function CalendarTableView({
               </td>
 
               {/* Villa Cells */}
-              {villas.map((villa) => {
+              {villasList.map((villa) => {
                 const booking = getBookingForDateAndVilla(day, villa.id);
                 const isStart = isBookingStart(day, booking);
                 const isEditing = editingCell?.date === day && editingCell?.villaId === villa.id;

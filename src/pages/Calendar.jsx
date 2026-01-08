@@ -82,12 +82,14 @@ export default function Calendar() {
     }
   }
 
-  const handleUpdateBooking = async (bookingId, clientName) => {
+  const handleUpdateBooking = async (bookingId, data) => {
     try {
       await updateBooking({
         id: bookingId,
-        client_name: clientName,
+        ...data
       }).unwrap()
+      setBookingDetailsOpen(false)
+      setSelectedBooking(null)
     } catch (error) {
        console.error('Failed to update booking:', error)
        alert("Failed to update booking.")
@@ -98,6 +100,8 @@ export default function Calendar() {
     try {
        if (window.confirm("Are you sure you want to delete this booking?")) {
          await deleteBooking(bookingId).unwrap()
+         setBookingDetailsOpen(false)
+         setSelectedBooking(null)
        }
     } catch (error) {
        console.error('Failed to delete booking:', error)
@@ -116,6 +120,9 @@ export default function Calendar() {
       villa: booking.villa_name,
       villa_id: booking.villa, 
       client: booking.client_name,
+      phone: booking.client_phone,
+      guests: booking.number_of_guests,
+      notes: booking.notes,
       status: booking.status,
     },
   })) || []
@@ -129,10 +136,15 @@ export default function Calendar() {
     
     if (info.event) {
        // From FullCalendar
-       const { villa, client, status } = info.event.extendedProps
+       const { villa, villa_id, client, phone, guests, notes, status } = info.event.extendedProps
        bookingData = {
+          id: info.event.id,
           villa, 
+          villa_id,
           client,
+          phone,
+          guests,
+          notes,
           status,
           checkIn: info.event.start,
           checkOut: info.event.end
@@ -140,8 +152,13 @@ export default function Calendar() {
     } else {
        // Raw booking object
        bookingData = {
+         id: info.id,
          villa: info.villa_name,
+         villa_id: info.villa,
          client: info.client_name,
+         phone: info.client_phone,
+         guests: info.number_of_guests,
+         notes: info.notes,
          status: info.status,
          checkIn: parseISO(info.check_in),
          checkOut: parseISO(info.check_out)
@@ -159,10 +176,13 @@ export default function Calendar() {
   
   const handleBookingClick = (booking) => {
       setSelectedBooking({
+        id: booking.id,
         villa: booking.villa_name,
+        villa_id: booking.villa,
         client: booking.client_name,
         phone: booking.client_phone,
         guests: booking.number_of_guests,
+        notes: booking.notes,
         status: booking.status,
         checkIn: new Date(booking.check_in),
         checkOut: new Date(booking.check_out),
@@ -357,6 +377,9 @@ export default function Calendar() {
           setSelectedBooking(null)
         }}
         booking={selectedBooking}
+        onUpdate={handleUpdateBooking}
+        onDelete={handleDeleteBooking}
+        villas={villas}
       />
     </div>
   )

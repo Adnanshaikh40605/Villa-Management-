@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { useGetBookingsQuery, useDeleteBookingMutation } from '@/services/api/bookingApi'
+import { useGetBookingsQuery, useDeleteBookingMutation, useUpdateBookingMutation } from '@/services/api/bookingApi'
+import { useGetVillasQuery } from '@/services/api/villaApi'
 import Card from '@/components/common/Card'
 import Button from '@/components/common/Button'
 import Badge from '@/components/common/Badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import BookingDetailsModal from '@/components/booking/BookingDetailsModal'
 import { format } from 'date-fns'
 import toast from 'react-hot-toast'
 
@@ -12,19 +14,55 @@ export default function Bookings() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const { data, isLoading } = useGetBookingsQuery({ search, status: statusFilter })
+  const { data: villasData } = useGetVillasQuery({})
   const [deleteBooking] = useDeleteBookingMutation()
+  const [updateBooking] = useUpdateBookingMutation()
+
+  const [selectedBooking, setSelectedBooking] = useState(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const bookings = data?.results || data || []
+  const villas = villasData?.results || villasData || []
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this booking?')) {
       try {
         await deleteBooking(id).unwrap()
         toast.success('Booking deleted successfully')
+        setIsModalOpen(false)
       } catch (error) {
         toast.error('Failed to delete booking')
       }
     }
+  }
+
+  const handleUpdate = async (id, data) => {
+      try {
+          await updateBooking({ id, ...data }).unwrap()
+          toast.success('Booking updated successfully')
+          setIsModalOpen(false)
+          setSelectedBooking(null)
+      } catch (error) {
+          console.error('Update failed', error)
+          toast.error('Failed to update booking')
+      }
+  }
+
+  const handleEdit = (booking) => {
+      setSelectedBooking({
+          id: booking.id,
+          // Handle cases where villa is object or ID (though table shows name, so assumes object available or we map it)
+          villa: booking.villa?.name || booking.villa_name || 'N/A', 
+          villa_id: booking.villa?.id || booking.villa,
+          client: booking.client_name,
+          phone: booking.client_phone,
+          guests: booking.number_of_guests,
+          notes: booking.notes,
+          status: booking.status,
+          checkIn: booking.check_in, // String or Date
+          checkOut: booking.check_out
+      })
+      setIsModalOpen(true)
   }
 
   const getPaymentBadgeVariant = (status) => {
@@ -151,7 +189,14 @@ export default function Bookings() {
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">
                       ₹{booking.total_amount || 'N/A'}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 flex gap-2">
+                       <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleEdit(booking)}
+                      >
+                        Edit
+                      </Button>
                       <Button
                         variant="danger"
                         size="sm"
@@ -167,6 +212,15 @@ export default function Bookings() {
           </table>
         </div>
       </Card>
+      
+      <BookingDetailsModal 
+         isOpen={isModalOpen}
+         onClose={() => setIsModalOpen(false)}
+         booking={selectedBooking}
+         onUpdate={handleUpdate}
+         onDelete={handleDelete}
+         villas={villas}
+      />
     </div>
   )
 }

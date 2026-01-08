@@ -174,7 +174,7 @@ export default function BookingModal({ isOpen, onClose, selectedDates, villas })
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setFormData({ ...formData, guests: Math.max(1, formData.guests - 1) })}
+                    onClick={() => setFormData({ ...formData, guests: formData.guests - 1 })}
                     className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-100 transition-colors"
                   >
                     <span className="text-lg font-semibold">−</span>
@@ -184,9 +184,7 @@ export default function BookingModal({ isOpen, onClose, selectedDates, villas })
                     name="guests"
                     value={formData.guests}
                     onChange={handleChange}
-                    min="1"
                     className="input text-center flex-1"
-                    readOnly
                   />
                   <button
                     type="button"

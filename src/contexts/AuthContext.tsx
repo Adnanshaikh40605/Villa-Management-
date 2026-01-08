@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User, AuthState } from '@/types';
 import { authService } from '@/services/auth';
 import { handleApiError } from '@/services/api';
+import { isTokenExpired, isTokenExpiringSoon } from '@/utils/jwt';
 
 interface AuthContextType extends AuthState {
   login: (username: string, password: string) => Promise<boolean>;
@@ -23,12 +24,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check for existing session with JWT token
     const checkAuth = async () => {
       const accessToken = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
       const storedUser = localStorage.getItem(STORAGE_KEY);
 
-      if (accessToken && storedUser) {
+      if (!accessToken || !refreshToken) {
+        // No tokens found, clear everything
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        localStorage.removeItem(STORAGE_KEY);
+        setState({
+          user: null,
+          isAuthenticated: false,
+          isLoading: false,
+        });
+        return;
+      }
+
+      // Check if access token is expired or expiring soon
+      const accessExpired = isTokenExpired(accessToken);
+      const accessExpiringSoon = isTokenExpiringSoon(accessToken, 300); // 5 minutes threshold
+
+      // If access token is expired or expiring soon, try to refresh it
+      if (accessExpired || accessExpiringSoon) {
         try {
-          const user = JSON.parse(storedUser) as User;
-          // Verify token is still valid by fetching current user
+          const { access } = await authService.refreshToken(refreshToken);
+          // Store new access token
+          localStorage.setItem('access_token', access);
+          
+          // Verify new token by fetching user
           const currentUser = await authService.getCurrentUser();
           setState({
             user: currentUser,
@@ -36,8 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isLoading: false,
           });
           localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
-        } catch (error) {
-          // Token invalid, clear storage
+        } catch (refreshError) {
+          // Refresh failed, clear storage
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           localStorage.removeItem(STORAGE_KEY);
@@ -47,12 +70,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             isLoading: false,
           });
         }
+        return;
+      }
+
+      // Access token is still valid, verify it by fetching user
+      if (storedUser) {
+        try {
+          const currentUser = await authService.getCurrentUser();
+          setState({
+            user: currentUser,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
+        } catch (error) {
+          // Token invalid (maybe blacklisted or user doesn't exist), try refresh
+          try {
+            const { access } = await authService.refreshToken(refreshToken);
+            localStorage.setItem('access_token', access);
+            const currentUser = await authService.getCurrentUser();
+            setState({
+              user: currentUser,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
+          } catch (refreshError) {
+            // Refresh also failed, clear storage
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem(STORAGE_KEY);
+            setState({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+          }
+        }
       } else {
-        setState({
-          user: null,
-          isAuthenticated: false,
-          isLoading: false,
-        });
+        // No stored user, fetch it
+        try {
+          const currentUser = await authService.getCurrentUser();
+          setState({
+            user: currentUser,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
+        } catch (error) {
+          // Fetch failed, clear storage
+          localStorage.removeItem('access_token');
+          localStorage.removeItem('refresh_token');
+          localStorage.removeItem(STORAGE_KEY);
+          setState({
+            user: null,
+            isAuthenticated: false,
+            isLoading: false,
+          });
+        }
       }
     };
 

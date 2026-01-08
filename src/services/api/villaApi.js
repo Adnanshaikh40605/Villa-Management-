@@ -26,20 +26,28 @@ export const villaApi = apiSlice.injectEndpoints({
     }),
     
     updateVilla: builder.mutation({
-      query: ({ id, ...villa }) => ({
-        url: `/villas/${id}/`,
-        method: 'PUT',
-        body: villa,
+      query: ({ id, ...body }) => ({
+        url: `villas/${id}/`,
+        method: 'PATCH',
+        body,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'Villas', id }, 'Villas'],
+      invalidatesTags: ['Villas'],
     }),
     
     deleteVilla: builder.mutation({
       query: (id) => ({
-        url: `/villas/${id}/`,
+        url: `villas/${id}/`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Villas'],
+    }),
+    
+    createGlobalSpecialDay: builder.mutation({
+        query: (body) => ({
+            url: 'special-days/',
+            method: 'POST',
+            body
+        }),
     }),
     
     checkAvailability: builder.query({
@@ -55,6 +63,7 @@ export const {
   useCreateVillaMutation,
   useUpdateVillaMutation,
   useDeleteVillaMutation,
+  useCreateGlobalSpecialDayMutation,
   useCheckAvailabilityQuery,
   useLazyCheckAvailabilityQuery,
 } = villaApi
