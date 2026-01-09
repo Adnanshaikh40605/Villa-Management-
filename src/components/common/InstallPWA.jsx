@@ -32,23 +32,30 @@ export default function InstallPWA() {
     // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice
     
-    // We've used the prompt, and can't use it again, throw it away
+    // We've used the prompt, and can't use it again
     setDeferredPrompt(null)
-    setIsOpen(false)
+    
+    if (outcome === 'accepted') {
+      setIsOpen(false)
+    } else {
+      // If they dismissed, we can't prompt again immediately with the same event.
+      // But we want to be "forceful", so we keep the modal open or show a message.
+      // Since we can't re-trigger prompt, we might just have to reload or tell them to install manually.
+      // For now, let's keep it open but maybe change the text or reload.
+      // Reloading might give another chance if the browser allows.
+      window.location.reload()
+    }
   }
 
   if (!isOpen) return null
 
   return (
-    <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="Install App">
+    <Modal isOpen={isOpen} title="Install App Required">
       <div className="space-y-4">
         <p className="text-gray-600">
-          Install our app for a better experience with offline access and faster loading times.
+          To use this application, you must install it on your device. This provides offline access and better performance.
         </p>
         <div className="flex justify-end gap-3">
-          <Button variant="secondary" onClick={() => setIsOpen(false)}>
-            Later
-          </Button>
           <Button variant="primary" onClick={handleInstall}>
             Install Now
           </Button>
