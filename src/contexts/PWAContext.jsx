@@ -24,6 +24,14 @@ export function PWAProvider({ children }) {
       console.log('PWAContext: beforeinstallprompt captured')
     }
 
+    // Check if the event was already captured in index.html
+    if (window.deferredPrompt) {
+      console.log('PWAContext: Found pre-captured event')
+      setDeferredPrompt(window.deferredPrompt)
+      setIsInstallable(true)
+      window.deferredPrompt = null // Clear it
+    }
+
     window.addEventListener('beforeinstallprompt', handler)
 
     // Check if already installed
@@ -32,6 +40,7 @@ export function PWAProvider({ children }) {
                          document.referrer.includes('android-app://')
 
     if (isStandalone) {
+      console.log('PWAContext: App is in standalone mode')
       setIsInstallable(false)
     }
 
