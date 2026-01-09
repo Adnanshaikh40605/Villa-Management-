@@ -6,6 +6,18 @@ import { Toaster } from 'react-hot-toast'
 import { store } from './store/store'
 import App from './App.jsx'
 import './index.css'
+import { registerSW } from 'virtual:pwa-register'
+
+// Register the PWA service worker
+registerSW({
+  immediate: true,
+  onNeedRefresh() {
+    console.log('PWA: New content available, click on reload button to update.')
+  },
+  onOfflineReady() {
+    console.log('PWA: App ready to work offline')
+  },
+})
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

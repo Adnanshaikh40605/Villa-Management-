@@ -18,6 +18,7 @@ import {
   toggleSidebar,
   setMobileMenuOpen,
 } from '@/features/ui/uiSlice'
+import { logout } from '@/features/auth/authSlice'
 import { usePWA } from '@/contexts/PWAContext'
 
 const navigation = [
@@ -39,6 +40,13 @@ export default function Sidebar() {
 
   const handleCloseMobileMenu = () => {
     dispatch(setMobileMenuOpen(false))
+  }
+
+  /* Wrapper for logout logic */
+  const handleLogout = () => {
+    dispatch(logout())
+    // Allow state to clear, though navigate usually handles it
+    window.location.href = '/login' 
   }
 
   return (
@@ -134,21 +142,30 @@ export default function Sidebar() {
                </div>
              </div>
 
-             <div className={`mt-3 pt-3 border-t border-gray-100 flex items-center justify-between ${!sidebarOpen && 'flex-col gap-2 mt-2 pt-2'}`}>
-                <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+             {/* PWA Install Button - Always Visible */}
+             {isInstallable && (
+               <div className="mb-3 pb-3 border-b border-gray-100">
+                 <button 
+                   onClick={promptToInstall}
+                   className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 bg-gradient-to-r from-primary-500 to-primary-600 text-white hover:from-primary-600 hover:to-primary-700 shadow-md hover:shadow-lg ${!sidebarOpen && 'justify-center px-3'}`}
+                   title="Install App"
+                 >
+                   <Download size={18} className="flex-shrink-0" />
+                   <span className={`font-medium text-sm transition-all duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 w-0 hidden'}`}>
+                     Install App
+                   </span>
+                 </button>
+               </div>
+             )}
+
+             <div className={`flex items-center justify-between ${!sidebarOpen && 'flex-col gap-2'}`}>
+                <button 
+                  onClick={handleLogout}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  title="Logout"
+                >
                   <LogOut size={18} />
                 </button>
-                
-                {/* PWA Install Button */}
-                {isInstallable && (
-                  <button 
-                    onClick={promptToInstall}
-                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
-                    title="Install App"
-                  >
-                    <Download size={18} />
-                  </button>
-                )}
 
                 <button
                   onClick={handleToggleSidebar}

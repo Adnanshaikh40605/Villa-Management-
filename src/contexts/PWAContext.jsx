@@ -21,12 +21,13 @@ export function PWAProvider({ children }) {
       // Stash the event so it can be triggered later.
       setDeferredPrompt(e)
       setIsInstallable(true)
-      console.log('PWAContext: beforeinstallprompt captured')
+      console.log('✅ PWAContext: beforeinstallprompt event captured!')
+      console.log('PWA is now installable')
     }
 
     // Check if the event was already captured in index.html
     if (window.deferredPrompt) {
-      console.log('PWAContext: Found pre-captured event')
+      console.log('✅ PWAContext: Found pre-captured event from window')
       setDeferredPrompt(window.deferredPrompt)
       setIsInstallable(true)
       window.deferredPrompt = null // Clear it
@@ -40,9 +41,18 @@ export function PWAProvider({ children }) {
                          document.referrer.includes('android-app://')
 
     if (isStandalone) {
-      console.log('PWAContext: App is in standalone mode')
+      console.log('ℹ️ PWAContext: App is already in standalone mode (installed)')
       setIsInstallable(false)
+    } else {
+      console.log('ℹ️ PWAContext: App is running in browser mode')
+      console.log('ℹ️ Waiting for beforeinstallprompt event...')
     }
+
+    // Debug: Log current state
+    console.log('PWAContext initialized:', {
+      isStandalone,
+      hasPreCapturedEvent: !!window.deferredPrompt
+    })
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler)
@@ -50,23 +60,36 @@ export function PWAProvider({ children }) {
   }, [])
 
   const promptToInstall = async () => {
+    console.log('🔔 Install button clicked')
+    
     if (!deferredPrompt) {
-        console.log("PWAContext: No deferred prompt available")
-        return
+        console.error('❌ PWAContext: No deferred prompt available')
+        console.log('This could mean:')
+        console.log('1. The app is already installed')
+        console.log('2. The browser does not support PWA installation')
+        console.log('3. The beforeinstallprompt event has not fired yet')
+        alert('Installation is not available. The app may already be installed or your browser does not support PWA installation.')
+        return null
     }
 
-    // Show the install prompt
-    deferredPrompt.prompt()
+    try {
+      console.log('📱 Showing install prompt...')
+      // Show the install prompt
+      deferredPrompt.prompt()
 
-    // Wait for the user to respond to the prompt
-    const { outcome } = await deferredPrompt.userChoice
-    console.log(`PWAContext: User response to install prompt: ${outcome}`)
+      // Wait for the user to respond to the prompt
+      const { outcome } = await deferredPrompt.userChoice
+      console.log(`✅ PWAContext: User response to install prompt: ${outcome}`)
 
-    // We've used the prompt, and can't use it again
-    setDeferredPrompt(null)
-    setIsInstallable(false)
-    
-    return outcome
+      // We've used the prompt, and can't use it again
+      setDeferredPrompt(null)
+      setIsInstallable(false)
+      
+      return outcome
+    } catch (error) {
+      console.error('❌ Error during PWA installation:', error)
+      return null
+    }
   }
 
   const value = {
