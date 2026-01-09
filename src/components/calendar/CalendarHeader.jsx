@@ -44,7 +44,12 @@ export default function CalendarHeader({
         <div className="flex items-center">
           <button
             onClick={onPrev}
-            className="p-1 sm:p-1.5 hover:bg-gray-100 rounded-full transition-colors text-gray-600"
+            disabled={format(currentDate, 'yyyy-MM') <= format(new Date(), 'yyyy-MM')}
+            className={`p-1 sm:p-1.5 rounded-full transition-colors ${
+                format(currentDate, 'yyyy-MM') <= format(new Date(), 'yyyy-MM')
+                ? 'text-gray-300 cursor-not-allowed'
+                : 'hover:bg-gray-100 text-gray-600'
+            }`}
             aria-label="Previous Month"
           >
             <ChevronLeftIcon className="w-5 h-5" />

@@ -5,6 +5,7 @@ import AddBookingModal from './AddBookingModal'
 export default function CalendarTableView({ 
   bookings, 
   villas, 
+  globalSpecialDays = [],
   currentDate,
   onBookingClick,
   onCreateBooking,
@@ -24,7 +25,12 @@ export default function CalendarTableView({
   // Generate all days for the current month
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd }).filter(day => {
+    // Only show today and future dates
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return day >= today
+  })
 
   const getBookingForDateAndVilla = (date, villaId) => {
     return bookings?.find(booking => {
@@ -117,10 +123,33 @@ export default function CalendarTableView({
       }
     }
     
-    // Priority 2: Check if villa has weekend pricing configured and if today is a configured weekend day
+    // Priority 2: Check if this date is a global special day
+    if (globalSpecialDays && globalSpecialDays.length > 0 && villa.special_day_price) {
+      const dateDay = date.getDate()
+      const dateMonth = date.getMonth() + 1 // JS months are 0-indexed
+      const dateYear = date.getFullYear()
+      
+      const isSpecialDay = globalSpecialDays.some(specialDay => {
+        // Match day and month
+        if (specialDay.day === dateDay && specialDay.month === dateMonth) {
+          // If year is specified, it must match; otherwise day/month match is enough
+          if (specialDay.year) {
+            return specialDay.year === dateYear
+          }
+          return true
+        }
+        return false
+      })
+      
+      if (isSpecialDay) {
+        return `₹${Math.floor(parseFloat(villa.special_day_price)).toLocaleString()}`
+      }
+    }
+    
+    // Priority 3: Check if villa has weekend pricing configured and if today is a configured weekend day
     const isConfiguredWeekend = villa.weekend_days && villa.weekend_days.includes(day)
     
-    // Priority 3: Weekend price (if configured and today is a weekend day), then base price
+    // Priority 4: Weekend price (if configured and today is a weekend day), then base price
     let price = villa.price_per_night
     
     if (isConfiguredWeekend && villa.weekend_price) {

@@ -103,6 +103,19 @@ export default function VillaModal({ isOpen, onClose, villa = null }) {
     e.preventDefault()
 
     try {
+      // Check if there is a pending special price in the inputs that hasn't been added
+      let currentSpecialPrices = [...specialPrices]
+      const { start_date, end_date, price } = newSpecialPrice
+      
+      if (start_date && end_date && price) {
+          if (new Date(start_date) <= new Date(newSpecialPrice.end_date)) {
+              currentSpecialPrices.push({ ...newSpecialPrice })
+              toast("Included unsaved special price", { icon: 'ℹ️' })
+          } else {
+             toast.error("Ignored invalid pending special price (Start date after End date)")
+          }
+      }
+
       const payload = {
         name: formData.name,
         location: formData.location,
@@ -113,7 +126,7 @@ export default function VillaModal({ isOpen, onClose, villa = null }) {
         special_day_price: formData.special_day_price ? parseFloat(formData.special_day_price) : null,
         weekend_days: formData.weekend_days,
         status: formData.status,
-        special_prices: specialPrices.map(sp => ({
+        special_prices: currentSpecialPrices.map(sp => ({
             ...sp, 
             price: parseFloat(sp.price)
         }))
@@ -128,6 +141,8 @@ export default function VillaModal({ isOpen, onClose, villa = null }) {
       }
 
       onClose()
+      // Reset pending state
+      setNewSpecialPrice({ start_date: '', end_date: '', price: '', name: '' })
     } catch (error) {
       console.error('Villa save error:', error)
       toast.error(error?.data?.detail || `Failed to ${villa ? 'update' : 'create'} villa`)

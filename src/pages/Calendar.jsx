@@ -8,7 +8,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
 import { useGetCalendarBookingsQuery, useCreateBookingMutation, useUpdateBookingMutation, useDeleteBookingMutation } from '@/services/api/bookingApi'
-import { useGetVillasQuery } from '@/services/api/villaApi'
+import { useGetVillasQuery, useGetGlobalSpecialDaysQuery } from '@/services/api/villaApi'
 import { format, startOfMonth, endOfMonth, addMonths, parseISO, addDays } from 'date-fns'
 import Card from '@/components/common/Card'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -33,6 +33,7 @@ export default function Calendar() {
     villa: selectedVilla || undefined 
   })
   const { data: villasData, isLoading: villasLoading } = useGetVillasQuery({})
+  const { data: globalSpecialDays, isLoading: specialDaysLoading } = useGetGlobalSpecialDaysQuery()
   
   // Mutation Hooks
   const [createBooking] = useCreateBookingMutation()
@@ -268,7 +269,7 @@ export default function Calendar() {
     }
   }
 
-  if (bookingsLoading || villasLoading) {
+  if (bookingsLoading || villasLoading || specialDaysLoading) {
     return (
       <div className="flex items-center justify-center h-96">
         <LoadingSpinner size="lg" />
@@ -321,6 +322,7 @@ export default function Calendar() {
                 <CalendarTableView 
                     bookings={bookings}
                     villas={villas}
+                    globalSpecialDays={globalSpecialDays || []}
                     currentDate={currentDate}
                     onBookingClick={handleBookingClick}
                     onCreateBooking={handleCreateBooking}

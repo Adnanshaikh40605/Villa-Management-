@@ -42,12 +42,18 @@ export const villaApi = apiSlice.injectEndpoints({
       invalidatesTags: ['Villas'],
     }),
     
+    getGlobalSpecialDays: builder.query({
+      query: () => 'special-days/',
+      providesTags: ['GlobalSpecialDays'],
+    }),
+    
     createGlobalSpecialDay: builder.mutation({
         query: (body) => ({
             url: 'special-days/',
             method: 'POST',
             body
         }),
+        invalidatesTags: ['GlobalSpecialDays'],
     }),
     
     checkAvailability: builder.query({
@@ -63,6 +69,7 @@ export const {
   useCreateVillaMutation,
   useUpdateVillaMutation,
   useDeleteVillaMutation,
+  useGetGlobalSpecialDaysQuery,
   useCreateGlobalSpecialDayMutation,
   useCheckAvailabilityQuery,
   useLazyCheckAvailabilityQuery,
