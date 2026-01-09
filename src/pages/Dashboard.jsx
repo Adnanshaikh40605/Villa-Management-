@@ -124,13 +124,7 @@ export default function Dashboard() {
       {/* Header Section */}
       <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 text-gray-500 text-sm font-medium mb-1">
-             <Clock className="w-4 h-4" />
-             <span>{format(today, 'EEEE, MMMM do, yyyy')}</span>
-          </div>
-          <h1 className="text-3xl font-display font-bold text-gray-900 tracking-tight">
-             Good Morning, Admin 👋
-          </h1>
+          {/* Greeting removed as per request */}
         </div>
         
         <div className="flex items-center gap-4">

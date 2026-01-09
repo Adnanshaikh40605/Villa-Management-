@@ -40,3 +40,9 @@ createRoot(document.getElementById('root')).render(
     </Provider>
   </StrictMode>,
 )
+
+document.addEventListener("wheel", function(event) {
+  if (document.activeElement.type === "number") {
+    document.activeElement.blur();
+  }
+});
