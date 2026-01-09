@@ -29,9 +29,11 @@ const PublicRoute = ({ children }) => {
   return !isAuthenticated ? children : <Navigate to="/" replace />
 }
 
+import { PWAProvider } from '@/contexts/PWAContext'
+
 function App() {
   return (
-    <>
+    <PWAProvider>
       <InstallPWA />
       <Routes>
       {/* Public Routes */}
@@ -65,7 +67,7 @@ function App() {
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
-    </>
+    </PWAProvider>
   )
 }
 

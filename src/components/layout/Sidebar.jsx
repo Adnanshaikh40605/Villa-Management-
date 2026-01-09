@@ -9,7 +9,8 @@ import {
   X,
   ChevronLeft,
   ChevronRight,
-  Settings
+  Settings,
+  Download
 } from 'lucide-react'
 import {
   selectSidebarOpen,
@@ -17,6 +18,7 @@ import {
   toggleSidebar,
   setMobileMenuOpen,
 } from '@/features/ui/uiSlice'
+import { usePWA } from '@/contexts/PWAContext'
 
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
@@ -29,6 +31,7 @@ export default function Sidebar() {
   const dispatch = useDispatch()
   const sidebarOpen = useSelector(selectSidebarOpen)
   const mobileMenuOpen = useSelector(selectMobileMenuOpen)
+  const { isInstallable, promptToInstall } = usePWA()
 
   const handleToggleSidebar = () => {
     dispatch(toggleSidebar())
@@ -135,6 +138,18 @@ export default function Sidebar() {
                 <button className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
                   <LogOut size={18} />
                 </button>
+                
+                {/* PWA Install Button */}
+                {isInstallable && (
+                  <button 
+                    onClick={promptToInstall}
+                    className="p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
+                    title="Install App"
+                  >
+                    <Download size={18} />
+                  </button>
+                )}
+
                 <button
                   onClick={handleToggleSidebar}
                   className="hidden lg:flex p-2 text-gray-400 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors"
