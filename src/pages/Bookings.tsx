@@ -224,13 +224,16 @@ export default function Bookings() {
                   <TableHead>Check-in</TableHead>
                   <TableHead>Check-out</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Total (₹)</TableHead>
+                  <TableHead className="text-right">Advance (₹)</TableHead>
+                  <TableHead className="text-right">Pending (₹)</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {sortedBookings.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={10} className="text-center py-8 text-muted-foreground">
                       No bookings found
                     </TableCell>
                   </TableRow>
@@ -255,6 +258,17 @@ export default function Bookings() {
                           >
                             {booking.status}
                           </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {booking.totalPayment ? `₹${booking.totalPayment.toFixed(2)}` : '-'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {booking.advancePayment ? `₹${booking.advancePayment.toFixed(2)}` : '-'}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <span className={(booking.pendingPayment || 0) > 0 ? 'text-orange-600 font-semibold' : 'text-green-600 font-semibold'}>
+                            {booking.pendingPayment !== undefined ? `₹${booking.pendingPayment.toFixed(2)}` : '-'}
+                          </span>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
@@ -326,6 +340,24 @@ export default function Bookings() {
                       <CalendarIcon className="h-4 w-4" />
                       {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
                     </div>
+                    {booking.totalPayment && (
+                      <div className="bg-slate-50 p-2 rounded border border-slate-200 space-y-1 mt-2">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-600">Total:</span>
+                          <span className="font-semibold">₹{booking.totalPayment.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-600">Advance:</span>
+                          <span className="font-semibold">₹{(booking.advancePayment || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs border-t border-slate-300 pt-1">
+                          <span className="text-slate-600">Pending:</span>
+                          <span className={(booking.pendingPayment || 0) > 0 ? 'font-bold text-orange-600' : 'font-bold text-green-600'}>
+                            ₹{(booking.pendingPayment || 0).toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex gap-2 mt-4">

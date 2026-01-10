@@ -1,15 +1,38 @@
-import React, { useState } from 'react'
-import { format } from 'date-fns'
+import React, { useState, useEffect } from 'react'
+import { format, addDays } from 'date-fns'
+import { bookingsService } from '@/services/bookings'
 
 export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }) {
-  const [checkOutDate, setCheckOutDate] = useState('')
+  // Initialize checkOutDate immediately from date prop
+  const initialCheckOut = date ? format(addDays(new Date(date), 1), 'yyyy-MM-dd') : ''
+  const [checkOutDate, setCheckOutDate] = useState(initialCheckOut)
+  
   const [formData, setFormData] = useState({
     client_name: '',
     client_phone: '',
+    client_email: '',
     number_of_guests: '',
     notes: '',
-    status: 'booked'
+    status: 'booked',
+    payment_status: 'pending',
+    advance_payment: '',
   })
+  
+  const [isDetailsExpanded, setIsDetailsExpanded] = useState(false)
+
+  const [pricePreview, setPricePreview] = useState({
+    total_payment: null,
+    nights: 0,
+    isLoading: false,
+  })
+
+  // Update checkOutDate whenever date changes
+  React.useEffect(() => {
+    if (date) {
+      const nextDay = addDays(new Date(date), 1)
+      setCheckOutDate(format(nextDay, 'yyyy-MM-dd'))
+    }
+  }, [date])
 
   // Reset form when modal opens
   React.useEffect(() => {
@@ -17,15 +40,51 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
         setFormData({
             client_name: '',
             client_phone: '',
+            client_email: '',
             number_of_guests: '',
             notes: '',
-            status: 'booked'
+            status: 'booked',
+            payment_status: 'pending',
+            advance_payment: '',
         })
-        const nextDay = new Date(date)
-        nextDay.setDate(nextDay.getDate() + 1)
-        setCheckOutDate(format(nextDay, 'yyyy-MM-dd'))
+        setIsDetailsExpanded(false)
     }
   }, [isOpen, date])
+
+  // Calculate price when villa or dates change
+  useEffect(() => {
+    console.log('Price calc useEffect:', { villa, date, checkOutDate, villaId: villa?.id })
+    const fetchPrice = async () => {
+      if (villa && date && checkOutDate) {
+        setPricePreview(prev => ({ ...prev, isLoading: true }))
+        try {
+          console.log('Calling calculatePrice with:', villa.id, format(date, 'yyyy-MM-dd'), checkOutDate)
+          const result = await bookingsService.calculatePrice(
+            villa.id,
+            format(date, 'yyyy-MM-dd'),
+            checkOutDate
+          )
+          console.log('Price result:', result)
+          setPricePreview({
+            total_payment: result.total_payment,
+            nights: result.nights,
+            isLoading: false,
+          })
+        } catch (error) {
+          console.error('Failed to calculate price:', error)
+          setPricePreview({ total_payment: null, nights: 0, isLoading: false })
+        }
+      } else {
+        console.log('Skipping price calc - missing data')
+        setPricePreview({ total_payment: null, nights: 0, isLoading: false })
+      }
+    }
+    fetchPrice()
+  }, [villa, date, checkOutDate])
+
+  const pendingPayment = pricePreview.total_payment 
+    ? (parseFloat(pricePreview.total_payment) - parseFloat(formData.advance_payment || 0))
+    : 0
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -44,12 +103,26 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
 
   const handleSubmit = (e) => {
     e.preventDefault()
+    
+    // Determine payment fields
+    const total = pricePreview.total_payment ? parseFloat(pricePreview.total_payment) : 0
+    const advance = formData.advance_payment ? parseFloat(formData.advance_payment) : 0
+    
+    // Calculate status based on amounts
+    let payStatus = 'pending'
+    if (advance >= total && total > 0) payStatus = 'full'
+    else if (advance > 0) payStatus = 'advance'
+
     onSave({
         ...formData,
+        client_email: formData.client_email,
         number_of_guests: formData.number_of_guests ? parseInt(formData.number_of_guests) : null,
         villa: villa.id,
         check_in: format(date, 'yyyy-MM-dd'),
-        check_out: checkOutDate
+        check_out: checkOutDate,
+        total_payment: total,
+        advance_payment: advance,
+        payment_status: payStatus,
     })
     onClose()
   }
@@ -75,91 +148,175 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
                 {format(date, 'dd MMM yyyy')}
               </p>
               
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">Client Name</label>
-                  <input
-                    type="text"
-                    name="client_name"
-                    id="client_name"
-                    required
-                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                    value={formData.client_name}
-                    onChange={handleChange}
-                  />
+              <form onSubmit={handleSubmit} className="space-y-3">
+                {/* Row 1: Name & Phone */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label htmlFor="client_name" className="block text-xs font-medium text-gray-700">Client Name</label>
+                      <input
+                        type="text"
+                        name="client_name"
+                        id="client_name"
+                        required
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        value={formData.client_name}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div>
+                        <label htmlFor="client_phone" className="block text-xs font-medium text-gray-700">Phone</label>
+                        <input
+                            type="text"
+                            name="client_phone"
+                            id="client_phone"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            value={formData.client_phone}
+                            onChange={handleChange}
+                        />
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Row 2: Dates */}
+                <div className="grid grid-cols-2 gap-3">
                     <div>
-                         <label className="block text-sm font-medium text-gray-700">Check-in</label>
-                         <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-500 sm:text-sm">
+                         <label className="block text-xs font-medium text-gray-700">Check-in</label>
+                         <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 bg-gray-50 text-gray-500 sm:text-sm">
                              {format(date, 'yyyy-MM-dd')}
                          </div>
                     </div>
                     <div>
-                         <label htmlFor="check_out_date" className="block text-sm font-medium text-gray-700">Check-out</label>
+                         <label htmlFor="check_out_date" className="block text-xs font-medium text-gray-700">Check-out</label>
                          <input
                             type="date"
                             name="check_out_date"
                             id="check_out_date"
                             required
                             min={format(new Date(date.getTime() + 86400000), 'yyyy-MM-dd')}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                             value={checkOutDate}
                             onChange={(e) => setCheckOutDate(e.target.value)}
                          />
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                {/* Row 3: Guests & Status */}
+                <div className="grid grid-cols-2 gap-3">
                     <div>
-                        <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">Phone Number</label>
-                        <input
-                            type="text"
-                            name="client_phone"
-                            id="client_phone"
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                            value={formData.client_phone}
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="number_of_guests" className="block text-sm font-medium text-gray-700">Guests</label>
+                        <label htmlFor="number_of_guests" className="block text-xs font-medium text-gray-700">Guests</label>
                         <input
                             type="number"
                             name="number_of_guests"
                             id="number_of_guests"
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                             value={formData.number_of_guests}
                             onChange={handleChange}
                         />
                     </div>
+                    <div>
+                        <label htmlFor="status" className="block text-xs font-medium text-gray-700">Status</label>
+                        <select
+                            name="status"
+                            id="status"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            value={formData.status}
+                            onChange={handleChange}
+                        >
+                            <option value="booked">Booked</option>
+                            <option value="blocked">Blocked</option>
+                        </select>
+                    </div>
                 </div>
 
+                {/* Notes */}
                 <div>
-                    <label htmlFor="status" className="block text-sm font-medium text-gray-700">Status</label>
-                    <select
-                        name="status"
-                        id="status"
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
-                        value={formData.status}
-                        onChange={handleChange}
-                    >
-                        <option value="booked">Booked</option>
-                        <option value="blocked">Blocked / Maintenance</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
+                    <label htmlFor="notes" className="block text-xs font-medium text-gray-700">Notes</label>
                     <textarea
                         name="notes"
                         id="notes"
-                        rows="2"
-                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                        rows="1"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                         value={formData.notes}
                         onChange={handleChange}
                     ></textarea>
+                </div>
+
+                {/* Payment Fields */}
+                <div className="space-y-2 pt-2 border-t border-gray-200">
+                    <h4 className="text-xs font-semibold text-gray-700">Payment Details</h4>
+                    
+                    <div className="grid grid-cols-3 gap-2">
+                        <div>
+                            <label className="block text-[10px] font-medium text-gray-600 mb-1">Total</label>
+                            <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 bg-gray-50 text-gray-900 font-semibold text-xs sm:text-sm truncate">
+                                {pricePreview.isLoading ? (
+                                    <span className="text-gray-400">...</span>
+                                ) : pricePreview.total_payment ? (
+                                    `₹${parseFloat(pricePreview.total_payment).toLocaleString()}`
+                                ) : (
+                                    <span className="text-gray-400">₹0</span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label htmlFor="advance_payment" className="block text-[10px] font-medium text-gray-600 mb-1">Advance</label>
+                            <input
+                                type="number"
+                                name="advance_payment"
+                                id="advance_payment"
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-xs sm:text-sm"
+                                value={formData.advance_payment}
+                                onChange={handleChange}
+                                placeholder="0"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-[10px] font-medium text-gray-600 mb-1">Pending</label>
+                            <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 bg-gray-50 text-red-600 font-semibold text-xs sm:text-sm truncate">
+                                ₹{parseFloat(pendingPayment).toLocaleString()}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Additional Details (Collapsible) */}
+                <div className="border border-gray-200 rounded-md overflow-hidden">
+                    <button 
+                        type="button"
+                        onClick={() => setIsDetailsExpanded(!isDetailsExpanded)}
+                        className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors duration-150 focus:outline-none"
+                    >
+                        <span className="text-sm font-medium text-gray-700">Additional Details</span>
+                        <svg 
+                            className={`w-5 h-5 text-gray-500 transform transition-transform duration-200 ${isDetailsExpanded ? 'rotate-180' : ''}`} 
+                            fill="none" 
+                            viewBox="0 0 24 24" 
+                            stroke="currentColor"
+                        >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+                    
+                    <div 
+                        className={`transition-all duration-300 ease-in-out ${isDetailsExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}
+                    >
+                        <div className="p-4 bg-white space-y-4">
+                            {/* Email Field */}
+                            <div>
+                                <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">Email (Optional)</label>
+                                <input
+                                    type="email"
+                                    name="client_email"
+                                    id="client_email"
+                                    placeholder="client@example.com"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                                    value={formData.client_email}
+                                    onChange={handleChange}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">

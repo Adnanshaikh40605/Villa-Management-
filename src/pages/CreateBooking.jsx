@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useCreateBookingMutation } from '@/services/api/bookingApi'
 import { useGetVillasQuery } from '@/services/api/villaApi'
+import { bookingsService } from '@/services/bookings'
 import Card from '@/components/common/Card'
 import Button from '@/components/common/Button'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -20,12 +21,50 @@ export default function CreateBooking() {
     guests: 1,
     status: 'booked',
     payment_status: 'pending',
+    advance_payment: '',
+  })
+
+  const [pricePreview, setPricePreview] = useState({
+    total_payment: null,
+    nights: 0,
+    isLoading: false,
   })
 
   const { data: villasData, isLoading: villasLoading } = useGetVillasQuery()
   const [createBooking, { isLoading }] = useCreateBookingMutation()
 
   const villas = villasData?.results || villasData || []
+
+  // Calculate price when villa or dates change
+  useEffect(() => {
+    const fetchPrice = async () => {
+      if (formData.villa && selectedDates) {
+        setPricePreview(prev => ({ ...prev, isLoading: true }))
+        try {
+          const result = await bookingsService.calculatePrice(
+            formData.villa,
+            format(selectedDates.start, 'yyyy-MM-dd'),
+            format(selectedDates.end, 'yyyy-MM-dd')
+          )
+          setPricePreview({
+            total_payment: result.total_payment,
+            nights: result.nights,
+            isLoading: false,
+          })
+        } catch (error) {
+          console.error('Failed to calculate price:', error)
+          setPricePreview({ total_payment: null, nights: 0, isLoading: false })
+        }
+      } else {
+        setPricePreview({ total_payment: null, nights: 0, isLoading: false })
+      }
+    }
+    fetchPrice()
+  }, [formData.villa, selectedDates])
+
+  const pendingPayment = pricePreview.total_payment 
+    ? (parseFloat(pricePreview.total_payment) - parseFloat(formData.advance_payment || 0))
+    : 0
 
   const handleChange = (e) => {
     setFormData({
@@ -50,6 +89,7 @@ export default function CreateBooking() {
         check_out: format(selectedDates.end, 'yyyy-MM-dd'),
         status: formData.status,
         payment_status: formData.payment_status,
+        advance_payment: formData.payment_status === 'advance' ? formData.advance_payment : 0,
       }
 
       if (formData.status === 'booked') {
@@ -234,6 +274,63 @@ export default function CreateBooking() {
                     <option value="full">Full Payment</option>
                   </select>
                 </div>
+              </div>
+              
+              {formData.payment_status === 'advance' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                     Advance Amount <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    name="advance_payment"
+                    value={formData.advance_payment}
+                    onChange={handleChange}
+                    required={formData.payment_status === 'advance'}
+                    className="input"
+                    placeholder="0.00"
+                  />
+                </div>
+              )}
+
+              {/* Payment Details */}
+              <div className="space-y-3 pt-2 border-t border-gray-200">
+                  <h4 className="text-sm font-semibold text-gray-700">Payment Details</h4>
+                  
+                  <div className="grid grid-cols-3 gap-3">
+                      <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Total Payment</label>
+                          <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-900 font-semibold sm:text-sm">
+                              {pricePreview.isLoading ? (
+                                  <span className="text-gray-400">Calculating...</span>
+                              ) : pricePreview.total_payment ? (
+                                  `₹${parseFloat(pricePreview.total_payment).toLocaleString()}`
+                              ) : (
+                                  <span className="text-gray-400">₹0</span>
+                              )}
+                          </div>
+                      </div>
+
+                      <div>
+                          <label htmlFor="advance_payment" className="block text-xs font-medium text-gray-600 mb-1">Advance Payment</label>
+                          <input
+                              type="number"
+                              name="advance_payment"
+                              id="advance_payment"
+                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                              value={formData.advance_payment}
+                              onChange={handleChange}
+                              placeholder="0"
+                          />
+                      </div>
+
+                      <div>
+                          <label className="block text-xs font-medium text-gray-600 mb-1">Pending Payment</label>
+                          <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-red-600 font-semibold sm:text-sm">
+                              ₹{parseFloat(pendingPayment).toLocaleString()}
+                          </div>
+                      </div>
+                  </div>
               </div>
             </>
           )}

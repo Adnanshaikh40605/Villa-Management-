@@ -305,7 +305,7 @@ export default function Calendar() {
             </div>
 
             <div className="flex items-center gap-1.5">
-                <span className="inline-block w-4 h-4 rounded bg-blue-100 border border-blue-200"></span>
+                <span className="inline-block w-4 h-4 rounded bg-green-100 border border-green-200"></span>
                 <span className="text-gray-600">Booked</span>
             </div>
 

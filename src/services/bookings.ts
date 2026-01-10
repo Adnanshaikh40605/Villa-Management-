@@ -22,7 +22,9 @@ export interface Booking {
   notes?: string;
   payment_status?: 'pending' | 'advance' | 'full';
   booking_source?: 'call' | 'whatsapp' | 'website' | 'other';
-  total_amount?: string;
+  total_payment?: string;
+  advance_payment?: string;
+  pending_payment?: string;
   nights?: number;
   created_at?: string;
   updated_at?: string;
@@ -90,6 +92,20 @@ export const bookingsService = {
     if (villaId) params.append('villa', String(villaId));
 
     const response = await api.get<CalendarBooking[]>('/bookings/calendar/', { params });
+    return response.data;
+  },
+
+  async calculatePrice(villaId: number, checkIn: string, checkOut: string): Promise<{ total_payment: string; nights: number; price_per_night_avg: string }> {
+    const response = await api.post('/bookings/calculate-price/', {
+      villa: villaId,
+      check_in: checkIn,
+      check_out: checkOut,
+    });
+    return response.data;
+  },
+
+  async sendEmailConfirmation(id: number): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>(`/bookings/send-email-confirmation/${id}/`, {});
     return response.data;
   },
 };

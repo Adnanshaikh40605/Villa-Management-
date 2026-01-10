@@ -149,13 +149,15 @@ export default function Bookings() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Advance</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pending</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {bookings.length === 0 ? (
                 <tr>
-                  <td colSpan="10" className="px-4 py-8 text-center text-gray-500">
+                  <td colSpan="11" className="px-4 py-8 text-center text-gray-500">
                     No bookings found
                   </td>
                 </tr>
@@ -187,7 +189,13 @@ export default function Bookings() {
                       )}
                     </td>
                     <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      ₹{booking.total_amount || 'N/A'}
+                      ₹{booking.total_payment || '0'}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-green-600">
+                      ₹{booking.advance_payment || '0'}
+                    </td>
+                    <td className="px-4 py-3 text-sm font-medium text-red-600">
+                      ₹{booking.pending_payment || '0'}
                     </td>
                     <td className="px-4 py-3 flex gap-2">
                        <Button

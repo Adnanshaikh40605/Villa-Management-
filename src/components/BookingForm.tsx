@@ -56,6 +56,7 @@ export default function BookingForm({
     notes: booking?.notes || '',
     paymentStatus: booking?.paymentStatus || undefined as PaymentStatus | undefined,
     bookingSource: booking?.bookingSource || undefined as BookingSource | undefined,
+    advancePayment: booking?.advancePayment || undefined as number | undefined,
   });
 
   const isEditing = !!booking;
@@ -72,6 +73,7 @@ export default function BookingForm({
       notes: '',
       paymentStatus: undefined,
       bookingSource: undefined,
+      advancePayment: undefined,
     });
   };
 
@@ -151,6 +153,7 @@ export default function BookingForm({
           notes: booking.notes || '',
           paymentStatus: booking.paymentStatus,
           bookingSource: booking.bookingSource,
+          advancePayment: booking.advancePayment,
         });
       } else {
         setFormData({
@@ -164,6 +167,7 @@ export default function BookingForm({
           notes: '',
           paymentStatus: undefined,
           bookingSource: undefined,
+          advancePayment: undefined,
         });
       }
     }
@@ -327,6 +331,43 @@ export default function BookingForm({
                   </Select>
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="advancePayment">Advance Payment (₹)</Label>
+                <Input
+                  id="advancePayment"
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={formData.advancePayment || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      advancePayment: e.target.value ? parseFloat(e.target.value) : undefined,
+                    })
+                  }
+                  placeholder="Enter advance payment amount"
+                />
+              </div>
+
+              {booking?.totalPayment && (
+                <div className="bg-slate-50 p-3 rounded-md space-y-1 border border-slate-200">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Total Payment:</span>
+                    <span className="font-semibold">₹{booking.totalPayment.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-600">Advance Payment:</span>
+                    <span className="font-semibold">₹{(booking.advancePayment || 0).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm border-t border-slate-300 pt-1 mt-1">
+                    <span className="text-slate-600">Pending Payment:</span>
+                    <span className={`font-bold ${(booking.pendingPayment || 0) > 0 ? 'text-orange-600' : 'text-green-600'}`}>
+                      ₹{(booking.pendingPayment || 0).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </>
           )}
 

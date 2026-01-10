@@ -28,6 +28,9 @@ export interface Booking {
   notes?: string;
   paymentStatus?: PaymentStatus;
   bookingSource?: BookingSource;
+  totalPayment?: number;
+  advancePayment?: number;
+  pendingPayment?: number;
   createdAt: string;
   updatedAt: string;
 }

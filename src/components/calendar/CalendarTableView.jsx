@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns'
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import AddBookingModal from './AddBookingModal'
 
 export default function CalendarTableView({ 
@@ -19,6 +20,9 @@ export default function CalendarTableView({
   // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [selectedSlot, setSelectedSlot] = useState({ date: null, villa: null })
+  
+  // Collapsible Date Column State
+  const [isDateColumnCollapsed, setIsDateColumnCollapsed] = useState(false)
 
   const inputRef = useRef(null)
 
@@ -147,7 +151,10 @@ export default function CalendarTableView({
     }
     
     // Priority 3: Check if villa has weekend pricing configured and if today is a configured weekend day
-    const isConfiguredWeekend = villa.weekend_days && villa.weekend_days.includes(day)
+    // Map JS getDay() (Sun=0...Sat=6) to Python weekday (Mon=0...Sun=6) to match backend data
+    const jsDay = date.getDay()
+    const pythonDay = jsDay === 0 ? 6 : jsDay - 1
+    const isConfiguredWeekend = villa.weekend_days && villa.weekend_days.includes(pythonDay)
     
     // Priority 4: Weekend price (if configured and today is a weekend day), then base price
     let price = villa.price_per_night
@@ -168,7 +175,7 @@ export default function CalendarTableView({
     if (!booking) return ''
     if (booking.status === 'blocked') return 'bg-gray-200 text-gray-800'
     if (booking.status === 'tentative') return 'bg-yellow-100 text-yellow-800'
-    return 'bg-blue-100 text-blue-900' // Default booked
+    return 'bg-green-100 text-green-900' // Default booked - changed to green
   }
 
   return (
@@ -180,18 +187,37 @@ export default function CalendarTableView({
             {/* Corner Cell: Date Header */}
             <th 
               scope="col" 
-              className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider sticky left-0 top-0 z-40 bg-gray-100 border-r border-b border-gray-300 shadow-sm"
-              style={{ minWidth: '120px', width: '120px' }}
+              className={`px-4 py-2 text-left text-xs font-bold text-gray-500 uppercase tracking-wider sticky left-0 top-0 z-40 bg-gray-100 border-r border-b border-gray-300 shadow-sm transition-all duration-300 ${isDateColumnCollapsed ? 'w-10' : 'w-28 sm:w-32'}`}
+              style={isDateColumnCollapsed ? { minWidth: '40px', width: '40px' } : { minWidth: '112px', width: '112px' }}
             >
-              Date
+              <div className="flex items-center justify-between">
+                {!isDateColumnCollapsed && <span className="text-[11px] sm:text-xs">Date</span>}
+                <button
+                  onClick={() => setIsDateColumnCollapsed(!isDateColumnCollapsed)}
+                  className="p-0.5 hover:bg-gray-200 rounded transition-colors ml-auto"
+                  title={isDateColumnCollapsed ? "Show dates" : "Hide dates"}
+                >
+                  {isDateColumnCollapsed ? (
+                    <ChevronRightIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-600" />
+                  ) : (
+                    <ChevronLeftIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-600" />
+                  )}
+                </button>
+              </div>
             </th>
             
-            {/* Villa Headers */}
+            {/* Villa Headers - Compact */}
             {villasList.map((villa) => (
               <th 
                 key={villa.id} 
                 scope="col" 
-                className="px-3 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider border-r border-b border-gray-200 min-w-[180px] bg-gray-50"
+                className="px-2 sm:px-3 py-2 text-left text-[11px] sm:text-xs font-bold text-gray-600 uppercase tracking-wider border-r border-b border-gray-200 min-w-[140px] sm:min-w-[180px] bg-gray-50"
+                style={{ 
+                  maxWidth: '180px',
+                  wordBreak: 'break-word',
+                  hyphens: 'auto',
+                  lineHeight: '1.3'
+                }}
               >
                 {villa.name}
               </th>
@@ -201,12 +227,18 @@ export default function CalendarTableView({
         <tbody className="bg-white divide-y divide-gray-200">
           {daysInMonth.map((day) => (
             <tr key={day.toString()} className="hover:bg-gray-50">
-              {/* Sticky Row Header: Date */}
-              <td className="px-4 py-3 text-sm font-bold text-gray-900 sticky left-0 z-20 bg-white border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
-                <div className="flex flex-col">
-                    <span>{format(day, 'dd MMM yyyy')}</span>
-                    <span className="text-xs text-gray-400 font-normal">{format(day, 'EEEE')}</span>
-                </div>
+              {/* Sticky Row Header: Date - Compact and Collapsible */}
+              <td className={`px-2 sm:px-3 py-1 sm:py-1.5 text-sm font-bold text-gray-900 sticky left-0 z-20 bg-white border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)] transition-all duration-300 ${isDateColumnCollapsed ? 'w-10' : 'w-28 sm:w-32'}`}>
+                {isDateColumnCollapsed ? (
+                  <div className="flex items-center justify-center">
+                    <span className="text-[10px] font-bold text-gray-700">{format(day, 'dd')}</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col">
+                    <span className="text-[11px] sm:text-xs">{format(day, 'dd MMM')}</span>
+                    <span className="text-[9px] sm:text-[10px] text-gray-400 font-normal">{format(day, 'EEE')}</span>
+                  </div>
+                )}
               </td>
 
               {/* Villa Cells */}
