@@ -107,7 +107,7 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
   }
 
   const handleSendWhatsAppConfirmation = () => {
-    // Get phone number (remove any non-digit characters and ensure it starts with country code)
+    // Get phone number from formData as it might be edited
     let phoneNumber = formData.phone.replace(/\D/g, '')
     
     // If phone doesn't start with country code, assume India (+91)
@@ -115,52 +115,58 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
       phoneNumber = '91' + phoneNumber
     }
 
-    // Format dates
-    const checkInFormatted = checkInDate && !isNaN(checkInDate.getTime()) 
-      ? format(checkInDate, 'dd MMM yyyy') 
-      : 'N/A'
-    const checkOutFormatted = checkOutDate && !isNaN(checkOutDate.getTime()) 
-      ? format(checkOutDate, 'dd MMM yyyy') 
-      : 'N/A'
+    // Format dates used in the message
+    // Template needs: "12th January 2026" (No time as per latest request)
+    const checkInDateObj = formData.check_in ? new Date(formData.check_in) : null
+    const checkOutDateObj = formData.check_out ? new Date(formData.check_out) : null
 
-    // Calculate nights
-    const nights = checkInDate && checkOutDate 
-      ? Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)) 
-      : 0
-
-    // Get villa name
-    const villaName = booking.villa_name || booking.villa?.name || 'Your Villa'
-
-    // Get total amount (if available)
-    const totalAmount = booking.total_amount 
-      ? `₹${parseFloat(booking.total_amount).toLocaleString()}` 
+    const checkInFormatted = checkInDateObj && !isNaN(checkInDateObj.getTime())
+      ? format(checkInDateObj, 'do MMMM yyyy')
+      : 'TBD'
+      
+    const checkOutFormatted = checkOutDateObj && !isNaN(checkOutDateObj.getTime())
+      ? format(checkOutDateObj, 'do MMMM yyyy')
       : 'TBD'
 
-    // Compose WhatsApp message
-    const message = `🏡 *Booking Confirmation*
+    // Villa Name
+    let villaName = booking.villa_name || booking.villa?.name || 'Villa'
+    if (formData.villa_id && villas) {
+        const selectedV = villas.find(v => v.id == (typeof formData.villa_id === 'object' ? formData.villa_id.id : formData.villa_id))
+        if (selectedV) villaName = selectedV.name
+    }
 
-Dear ${formData.client},
+    // Payment Calculations
+    const total = parseFloat(booking.total_payment || 0)
+    const advance = parseFloat(formData.advance_payment || 0)
+    const pending = total - advance
 
-Your booking has been confirmed! Here are the details:
+    // Using Surrogate Pairs for maximum compatibility
+    const message = `Dear ${formData.client},
 
-📍 *Villa:* ${villaName}
-📅 *Check-in:* ${checkInFormatted}
-📅 *Check-out:* ${checkOutFormatted}
-🌙 *Nights:* ${nights}
-👥 *Guests:* ${formData.guests}
-💰 *Total Amount:* ${totalAmount}
+Booking Confirmation – ${villaName}.
 
-Thank you for choosing us! We look forward to hosting you.
+Thank you for booking with us.
+We’re pleased to confirm your ${villaName} booking.
 
-If you have any questions, feel free to reply to this message.
+Booking Details:
+Villa Type: ${villaName}
+ Check-in: ${checkInFormatted}
+ Check-out: ${checkOutFormatted}
 
-Best regards,
-VillaManager Team`
+Payment of Rs ${advance} received as confirmation, remaining payment of Rs ${pending} you can do at checkin.
 
-    // Encode the message for URL
+Your booking is successfully confirmed. The villa will be thoroughly cleaned, fully prepared, and ready before your arrival to ensure a smooth and comfortable stay.
+
+If you need any assistance or have any questions, please feel free to contact us anytime.
+
+Warm regards,
+Vacation BNA
+8976203444
+9619777136
+vacationbna.com`
+
+    // Encode the message
     const encodedMessage = encodeURIComponent(message)
-
-    // Open WhatsApp with pre-filled message
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`
     window.open(whatsappUrl, '_blank')
   }

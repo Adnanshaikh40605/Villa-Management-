@@ -356,12 +356,10 @@ export default function Calendar() {
                     meridiem: false
                     }}
                     validRange={{
-                    start: new Date().toISOString().split('T')[0]
+                    start: '2020-01-01' // Allow past dates
                     }}
                     selectAllow={(selectInfo) => {
-                    const today = new Date()
-                    today.setHours(0, 0, 0, 0)
-                    return selectInfo.start >= today
+                         return true // Allow selecting past dates
                     }}
                     longPressDelay={0}
                     eventLongPressDelay={100} 

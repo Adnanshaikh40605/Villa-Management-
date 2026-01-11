@@ -29,12 +29,7 @@ export default function CalendarTableView({
   // Generate all days for the current month
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
-  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd }).filter(day => {
-    // Only show today and future dates
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    return day >= today
-  })
+  const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
 
   const getBookingForDateAndVilla = (date, villaId) => {
     return bookings?.find(booking => {

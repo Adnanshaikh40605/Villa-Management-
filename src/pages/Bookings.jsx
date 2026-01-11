@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, MagnifyingGlassIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 import { useGetBookingsQuery, useDeleteBookingMutation, useUpdateBookingMutation } from '@/services/api/bookingApi'
 import { useGetVillasQuery } from '@/services/api/villaApi'
 import Card from '@/components/common/Card'
@@ -7,7 +7,7 @@ import Button from '@/components/common/Button'
 import Badge from '@/components/common/Badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import BookingDetailsModal from '@/components/booking/BookingDetailsModal'
-import { format } from 'date-fns'
+import { format, isBefore, parseISO, startOfDay } from 'date-fns'
 import toast from 'react-hot-toast'
 
 export default function Bookings() {
@@ -20,9 +20,29 @@ export default function Bookings() {
 
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  
+  // Section visibility states
+  const [activeTab, setActiveTab] = useState('current')
 
   const bookings = data?.results || data || []
   const villas = villasData?.results || villasData || []
+
+  // Split bookings into Current and Completed
+  const today = startOfDay(new Date())
+  
+  const currentBookings = bookings.filter(booking => {
+    if (!booking.check_out) return true
+    const checkOutDate = parseISO(booking.check_out)
+    // Keep in current if checkout is today or in future
+    return !isBefore(checkOutDate, today)
+  })
+
+  const completedBookings = bookings.filter(booking => {
+    if (!booking.check_out) return false
+    const checkOutDate = parseISO(booking.check_out)
+    // Move to completed if checkout date is strictly in the past
+    return isBefore(checkOutDate, today)
+  })
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this booking?')) {
@@ -51,7 +71,6 @@ export default function Bookings() {
   const handleEdit = (booking) => {
       setSelectedBooking({
           id: booking.id,
-          // Handle cases where villa is object or ID (though table shows name, so assumes object available or we map it)
           villa: booking.villa?.name || booking.villa_name || 'N/A', 
           villa_id: booking.villa?.id || booking.villa,
           client: booking.client_name,
@@ -59,7 +78,7 @@ export default function Bookings() {
           guests: booking.number_of_guests,
           notes: booking.notes,
           status: booking.status,
-          checkIn: booking.check_in, // String or Date
+          checkIn: booking.check_in,
           checkOut: booking.check_out
       })
       setIsModalOpen(true)
@@ -67,16 +86,99 @@ export default function Bookings() {
 
   const getPaymentBadgeVariant = (status) => {
     switch (status) {
-      case 'full':
-        return 'success'
-      case 'advance':
-        return 'warning'
-      case 'pending':
-        return 'danger'
-      default:
-        return 'info'
+      case 'full': return 'success'
+      case 'advance': return 'warning'
+      case 'pending': return 'danger'
+      default: return 'info'
     }
   }
+  
+  // Reusable Table Component
+  const BookingsTable = ({ data, emptyMessage }) => (
+    <div className="overflow-x-auto">
+      <table className="w-full">
+        <thead className="bg-gray-50 border-b border-gray-200">
+          <tr>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Villa</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check-in</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check-out</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Advance</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pending</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-200">
+          {data.length === 0 ? (
+            <tr>
+              <td colSpan="12" className="px-4 py-8 text-center text-gray-500">
+                {emptyMessage}
+              </td>
+            </tr>
+          ) : (
+            data.map((booking) => (
+              <tr key={booking.id} className="hover:bg-gray-50">
+                <td className="px-4 py-3 text-sm text-gray-900">{booking.id}</td>
+                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                  {booking.villa?.name || 'N/A'}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-900">{booking.client_name}</td>
+                <td className="px-4 py-3 text-sm text-gray-600">{booking.client_phone}</td>
+                <td className="px-4 py-3 text-sm text-gray-600">
+                  {format(new Date(booking.check_in), 'MMM dd, yyyy')}
+                </td>
+                <td className="px-4 py-3 text-sm text-gray-600">
+                  {format(new Date(booking.check_out), 'MMM dd, yyyy')}
+                </td>
+                <td className="px-4 py-3">
+                  <Badge variant={booking.status === 'booked' ? 'success' : 'info'}>
+                    {booking.status}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3">
+                  {booking.payment_status && (
+                    <Badge variant={getPaymentBadgeVariant(booking.payment_status)}>
+                      {booking.payment_status}
+                    </Badge>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                  ₹{booking.total_payment || '0'}
+                </td>
+                <td className="px-4 py-3 text-sm font-medium text-green-600">
+                  ₹{booking.advance_payment || '0'}
+                </td>
+                <td className="px-4 py-3 text-sm font-medium text-red-600">
+                  ₹{booking.pending_payment || '0'}
+                </td>
+                <td className="px-4 py-3 flex gap-2">
+                   <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleEdit(booking)}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => handleDelete(booking.id)}
+                  >
+                    Delete
+                  </Button>
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  )
 
   if (isLoading) {
     return (
@@ -87,7 +189,7 @@ export default function Bookings() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-12">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
@@ -134,93 +236,55 @@ export default function Bookings() {
         </div>
       </Card>
 
-      {/* Bookings Table */}
-      <Card>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Villa</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check-in</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check-out</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Advance</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pending</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {bookings.length === 0 ? (
-                <tr>
-                  <td colSpan="11" className="px-4 py-8 text-center text-gray-500">
-                    No bookings found
-                  </td>
-                </tr>
-              ) : (
-                bookings.map((booking) => (
-                  <tr key={booking.id} className="hover:bg-gray-50">
-                    <td className="px-4 py-3 text-sm text-gray-900">{booking.id}</td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      {booking.villa?.name || 'N/A'}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-900">{booking.client_name}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">{booking.client_phone}</td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {format(new Date(booking.check_in), 'MMM dd, yyyy')}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-gray-600">
-                      {format(new Date(booking.check_out), 'MMM dd, yyyy')}
-                    </td>
-                    <td className="px-4 py-3">
-                      <Badge variant={booking.status === 'booked' ? 'success' : 'info'}>
-                        {booking.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-3">
-                      {booking.payment_status && (
-                        <Badge variant={getPaymentBadgeVariant(booking.payment_status)}>
-                          {booking.payment_status}
-                        </Badge>
-                      )}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                      ₹{booking.total_payment || '0'}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-green-600">
-                      ₹{booking.advance_payment || '0'}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-red-600">
-                      ₹{booking.pending_payment || '0'}
-                    </td>
-                    <td className="px-4 py-3 flex gap-2">
-                       <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => handleEdit(booking)}
-                      >
-                        Edit
-                      </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        onClick={() => handleDelete(booking.id)}
-                      >
-                        Delete
-                      </Button>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-      
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          <button
+            onClick={() => setActiveTab('current')}
+            className={`
+              whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors
+              ${activeTab === 'current'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+            `}
+          >
+            Current & Upcoming
+            <Badge variant="primary" className="ml-3">{currentBookings.length}</Badge>
+          </button>
+          <button
+            onClick={() => setActiveTab('completed')}
+            className={`
+              whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors
+              ${activeTab === 'completed'
+                ? 'border-primary-500 text-primary-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}
+            `}
+          >
+            Completed
+            <Badge variant="secondary" className="ml-3">{completedBookings.length}</Badge>
+          </button>
+        </nav>
+      </div>
+
+      {/* Bookings Table Section */}
+      <div className="space-y-4">
+        {activeTab === 'current' ? (
+            <Card>
+                <BookingsTable 
+                    data={currentBookings} 
+                    emptyMessage="No current or upcoming bookings found" 
+                />
+            </Card>
+        ) : (
+            <Card className="bg-gray-50">
+                <BookingsTable 
+                    data={completedBookings} 
+                    emptyMessage="No completed bookings found" 
+                />
+            </Card>
+        )}
+      </div>
+
       <BookingDetailsModal 
          isOpen={isModalOpen}
          onClose={() => setIsModalOpen(false)}
