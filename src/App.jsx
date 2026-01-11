@@ -4,7 +4,7 @@ import { selectIsAuthenticated } from '@/features/auth/authSlice'
 
 // Layout
 import MainLayout from '@/components/layout/MainLayout'
-import InstallPWA from '@/components/common/InstallPWA'
+
 
 // Pages
 import Dashboard from '@/pages/Dashboard'
@@ -34,7 +34,7 @@ import { PWAProvider } from '@/contexts/PWAContext'
 function App() {
   return (
     <PWAProvider>
-      <InstallPWA />
+
       <Routes>
       {/* Public Routes */}
       <Route
