@@ -10,6 +10,12 @@ export const bookingApi = apiSlice.injectEndpoints({
         if (params.search) searchParams.append('search', params.search)
         if (params.check_in_after) searchParams.append('check_in_after', params.check_in_after)
         if (params.check_in_before) searchParams.append('check_in_before', params.check_in_before)
+        
+        // Pagination & Time Frame
+        if (params.page) searchParams.append('page', params.page)
+        if (params.page_size) searchParams.append('page_size', params.page_size) // If custom size needed
+        if (params.time_frame) searchParams.append('time_frame', params.time_frame) // 'current' or 'completed'
+        
         return `/bookings/?${searchParams.toString()}`
       },
       providesTags: ['Bookings'],

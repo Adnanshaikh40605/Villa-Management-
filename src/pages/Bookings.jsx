@@ -7,13 +7,34 @@ import Button from '@/components/common/Button'
 import Badge from '@/components/common/Badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import BookingDetailsModal from '@/components/booking/BookingDetailsModal'
+import Pagination from '@/components/common/Pagination' // Imported Pagination
 import { format, isBefore, parseISO, startOfDay } from 'date-fns'
 import toast from 'react-hot-toast'
 
 export default function Bookings() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
-  const { data, isLoading } = useGetBookingsQuery({ search, status: statusFilter })
+  const [activeTab, setActiveTab] = useState('current')
+  
+  // Pagination State
+  const [pagination, setPagination] = useState({
+      current: 1,
+      completed: 1
+  })
+
+  // Determine current page based on active tab
+  const currentPage = pagination[activeTab]
+
+  // Query Params
+  const queryParams = {
+      search,
+      status: statusFilter,
+      page: currentPage,
+      page_size: 10,
+      time_frame: activeTab // 'current' or 'completed'
+  }
+
+  const { data, isLoading, isFetching } = useGetBookingsQuery(queryParams)
   const { data: villasData } = useGetVillasQuery({})
   const [deleteBooking] = useDeleteBookingMutation()
   const [updateBooking] = useUpdateBookingMutation()
@@ -21,28 +42,24 @@ export default function Bookings() {
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   
-  // Section visibility states
-  const [activeTab, setActiveTab] = useState('current')
 
-  const bookings = data?.results || data || []
+  const bookingsResults = data?.results || []
+  const totalCount = data?.count || 0
   const villas = villasData?.results || villasData || []
 
-  // Split bookings into Current and Completed
-  const today = startOfDay(new Date())
-  
-  const currentBookings = bookings.filter(booking => {
-    if (!booking.check_out) return true
-    const checkOutDate = parseISO(booking.check_out)
-    // Keep in current if checkout is today or in future
-    return !isBefore(checkOutDate, today)
-  })
 
-  const completedBookings = bookings.filter(booking => {
-    if (!booking.check_out) return false
-    const checkOutDate = parseISO(booking.check_out)
-    // Move to completed if checkout date is strictly in the past
-    return isBefore(checkOutDate, today)
-  })
+  const handlePageChange = (newPage) => {
+      setPagination(prev => ({
+          ...prev,
+          [activeTab]: newPage
+      }))
+  }
+
+  const handleTabChange = (tab) => {
+      setActiveTab(tab)
+      // Optional: Reset other filters or keep them
+  }
+
 
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this booking?')) {
@@ -71,15 +88,17 @@ export default function Bookings() {
   const handleEdit = (booking) => {
       setSelectedBooking({
           id: booking.id,
-          villa: booking.villa?.name || booking.villa_name || 'N/A', 
-          villa_id: booking.villa?.id || booking.villa,
+          // Handle different villa data structures (id or object)
+          villa: typeof booking.villa === 'object' ? booking.villa?.name : booking.villa_name || 'N/A', 
+          villa_id: typeof booking.villa === 'object' ? booking.villa?.id : booking.villa,
           client: booking.client_name,
           phone: booking.client_phone,
           guests: booking.number_of_guests,
           notes: booking.notes,
           status: booking.status,
           checkIn: booking.check_in,
-          checkOut: booking.check_out
+          checkOut: booking.check_out,
+          payment_method: booking.payment_method
       })
       setIsModalOpen(true)
   }
@@ -115,7 +134,7 @@ export default function Bookings() {
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {data.length === 0 ? (
+          {data.length === 0 && !isLoading ? (
             <tr>
               <td colSpan="13" className="px-4 py-8 text-center text-gray-500">
                 {emptyMessage}
@@ -126,7 +145,7 @@ export default function Bookings() {
               <tr key={booking.id} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm text-gray-900">{booking.id}</td>
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                  {booking.villa?.name || 'N/A'}
+                  {booking.villa?.name || booking.villa_name || 'N/A'}
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">{booking.client_name}</td>
                 <td className="px-4 py-3 text-sm text-gray-600">{booking.client_phone}</td>
@@ -186,14 +205,6 @@ export default function Bookings() {
     </div>
   )
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <LoadingSpinner size="lg" />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6 pb-12">
       {/* Page Header */}
@@ -219,7 +230,10 @@ export default function Bookings() {
               <input
                 type="text"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => {
+                    setSearch(e.target.value) 
+                    setPagination(prev => ({ ...prev, [activeTab]: 1 })) // Reset page on search
+                }}
                 placeholder="Search by client name or phone..."
                 className="input pl-10"
               />
@@ -231,7 +245,10 @@ export default function Bookings() {
             </label>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                  setStatusFilter(e.target.value)
+                  setPagination(prev => ({ ...prev, [activeTab]: 1 })) // Reset page on filter
+              }}
               className="input"
             >
               <option value="">All Bookings</option>
@@ -246,7 +263,7 @@ export default function Bookings() {
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8" aria-label="Tabs">
           <button
-            onClick={() => setActiveTab('current')}
+            onClick={() => handleTabChange('current')}
             className={`
               whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors
               ${activeTab === 'current'
@@ -255,10 +272,9 @@ export default function Bookings() {
             `}
           >
             Current & Upcoming
-            <Badge variant="primary" className="ml-3">{currentBookings.length}</Badge>
           </button>
           <button
-            onClick={() => setActiveTab('completed')}
+            onClick={() => handleTabChange('completed')}
             className={`
               whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors
               ${activeTab === 'completed'
@@ -267,29 +283,35 @@ export default function Bookings() {
             `}
           >
             Completed
-            <Badge variant="secondary" className="ml-3">{completedBookings.length}</Badge>
           </button>
         </nav>
       </div>
 
       {/* Bookings Table Section */}
-      <div className="space-y-4">
-        {activeTab === 'current' ? (
-            <Card>
-                <BookingsTable 
-                    data={currentBookings} 
-                    emptyMessage="No current or upcoming bookings found" 
-                />
-            </Card>
+      <Card className={activeTab === 'completed' ? 'bg-gray-50' : ''}>
+        {isLoading || isFetching ? (
+             <div className="flex items-center justify-center py-12">
+                <LoadingSpinner size="lg" />
+            </div>
         ) : (
-            <Card className="bg-gray-50">
+             <>
                 <BookingsTable 
-                    data={completedBookings} 
-                    emptyMessage="No completed bookings found" 
+                    data={bookingsResults} 
+                    emptyMessage={activeTab === 'current' ? "No current or upcoming bookings found" : "No completed bookings found"} 
                 />
-            </Card>
+                
+                {/* Pagination Controls */}
+                <div className="px-4 border-t border-gray-200">
+                    <Pagination 
+                        currentPage={currentPage}
+                        totalCount={totalCount}
+                        pageSize={10}
+                        onPageChange={handlePageChange}
+                    />
+                </div>
+            </>
         )}
-      </div>
+      </Card>
 
       <BookingDetailsModal 
          isOpen={isModalOpen}

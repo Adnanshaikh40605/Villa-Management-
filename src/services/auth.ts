@@ -39,8 +39,8 @@ export const authService = {
     }
   },
 
-  async refreshToken(refreshToken: string): Promise<{ access: string }> {
-    const response = await api.post<{ access: string }>('/auth/refresh/', {
+  async refreshToken(refreshToken: string): Promise<{ access: string; refresh?: string }> {
+    const response = await api.post<{ access: string; refresh?: string }>('/auth/refresh/', {
       refresh: refreshToken,
     });
     return response.data;

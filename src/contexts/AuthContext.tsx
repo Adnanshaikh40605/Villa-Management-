@@ -47,9 +47,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // If access token is expired or expiring soon, try to refresh it
       if (accessExpired || accessExpiringSoon) {
         try {
-          const { access } = await authService.refreshToken(refreshToken);
+          const { access, refresh } = await authService.refreshToken(refreshToken);
           // Store new access token
           localStorage.setItem('access_token', access);
+          if (refresh) {
+            localStorage.setItem('refresh_token', refresh);
+          }
           
           // Verify new token by fetching user
           const currentUser = await authService.getCurrentUser();
@@ -86,8 +89,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } catch (error) {
           // Token invalid (maybe blacklisted or user doesn't exist), try refresh
           try {
-            const { access } = await authService.refreshToken(refreshToken);
+            const { access, refresh } = await authService.refreshToken(refreshToken);
             localStorage.setItem('access_token', access);
+            if (refresh) {
+              localStorage.setItem('refresh_token', refresh);
+            }
             const currentUser = await authService.getCurrentUser();
             setState({
               user: currentUser,
