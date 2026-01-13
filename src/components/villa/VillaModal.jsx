@@ -40,7 +40,8 @@ export default function VillaModal({ isOpen, onClose, villa = null }) {
          weekend_price: villa.weekend_price ? villa.weekend_price.toString() : '',
          special_day_price: villa.special_day_price ? villa.special_day_price.toString() : '',
          weekend_days: villa.weekend_days || [],
-         status: villa.status || 'active'
+         status: villa.status || 'active',
+         order: villa.order || 0
        })
        // Map received special_prices to local state if available
        setSpecialPrices(villa.special_prices || [])
@@ -56,6 +57,9 @@ export default function VillaModal({ isOpen, onClose, villa = null }) {
         special_day_price: '',
         weekend_days: [],
         status: 'active',
+        weekend_days: [],
+        status: 'active',
+        order: 0,
        })
        setSpecialPrices([])
     }
@@ -126,6 +130,7 @@ export default function VillaModal({ isOpen, onClose, villa = null }) {
         special_day_price: formData.special_day_price ? parseFloat(formData.special_day_price) : null,
         weekend_days: formData.weekend_days,
         status: formData.status,
+        order: parseInt(formData.order) || 0,
         special_prices: currentSpecialPrices.map(sp => ({
             ...sp, 
             price: parseFloat(sp.price)
@@ -182,6 +187,10 @@ export default function VillaModal({ isOpen, onClose, villa = null }) {
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Max Guests <span className="text-red-500">*</span></label>
                     <input type="number" name="max_guests" value={formData.max_guests} onChange={handleChange} required min="1" className="input" />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+                    <input type="number" name="order" value={formData.order} onChange={handleChange} min="0" className="input" placeholder="0" />
                 </div>
             </div>
         </div>

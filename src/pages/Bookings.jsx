@@ -107,6 +107,7 @@ export default function Bookings() {
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Check-out</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Payment</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Advance</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pending</th>
@@ -116,7 +117,7 @@ export default function Bookings() {
         <tbody className="divide-y divide-gray-200">
           {data.length === 0 ? (
             <tr>
-              <td colSpan="12" className="px-4 py-8 text-center text-gray-500">
+              <td colSpan="13" className="px-4 py-8 text-center text-gray-500">
                 {emptyMessage}
               </td>
             </tr>
@@ -146,6 +147,11 @@ export default function Bookings() {
                       {booking.payment_status}
                     </Badge>
                   )}
+                </td>
+                <td className="px-4 py-3">
+                     <Badge variant="secondary">
+                      {(booking.payment_method || 'online').toUpperCase()}
+                    </Badge>
                 </td>
                 <td className="px-4 py-3 text-sm font-medium text-gray-900">
                   ₹{booking.total_payment || '0'}

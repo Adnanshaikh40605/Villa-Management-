@@ -41,7 +41,8 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
     villa_id: '',
     check_in: '',
     check_out: '',
-    advance_payment: 0
+    advance_payment: 0,
+    payment_method: 'online'
   })
 
   useEffect(() => {
@@ -56,7 +57,8 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
         villa_id: booking.villa?.id || booking.villa || booking.villa_id || '', // Handle object or ID
         check_in: booking.check_in || booking.checkIn,
         check_out: booking.check_out || booking.checkOut,
-        advance_payment: booking.advance_payment || 0
+        advance_payment: booking.advance_payment || 0,
+        payment_method: booking.payment_method || 'online'
       })
       // Only reset editing state if we're opening a fresh modal, not during re-renders
       if (!isEditing) setIsEditing(false)
@@ -98,7 +100,8 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
          villa: typeof formData.villa_id === 'object' ? formData.villa_id.id : formData.villa_id,
          check_in: formData.check_in,
          check_out: formData.check_out,
-         advance_payment: formData.advance_payment
+         advance_payment: formData.advance_payment,
+         payment_method: formData.payment_method
      })
   }
 
@@ -293,6 +296,26 @@ vacationbna.com`
         <div className="space-y-3 pt-2 border-t border-gray-200">
             <h4 className="text-sm font-semibold text-gray-700">Payment Details</h4>
             
+            <div className="grid grid-cols-2 gap-4 mb-2">
+                 <div>
+                    {isEditing ? (
+                       <select
+                           name="payment_method"
+                           value={formData.payment_method}
+                           onChange={handleChange}
+                           className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                       >
+                           <option value="online">Online</option>
+                           <option value="cash">Cash</option>
+                       </select>
+                    ) : (
+                       <Badge variant="secondary">
+                           {(booking.payment_method || 'online').toUpperCase()}
+                       </Badge>
+                    )}
+                 </div>
+            </div>
+
             <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Total Payment</label>

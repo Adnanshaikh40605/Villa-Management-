@@ -15,6 +15,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
     notes: '',
     status: 'booked',
     payment_status: 'pending',
+    payment_method: 'online',
     advance_payment: '',
   })
   
@@ -45,6 +46,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
             notes: '',
             status: 'booked',
             payment_status: 'pending',
+            payment_method: 'online',
             advance_payment: '',
         })
         setIsDetailsExpanded(false)
@@ -123,6 +125,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
         total_payment: total,
         advance_payment: advance,
         payment_status: payStatus,
+        payment_method: formData.payment_method,
     })
     onClose()
   }
@@ -244,6 +247,21 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
                 <div className="space-y-2 pt-2 border-t border-gray-200">
                     <h4 className="text-xs font-semibold text-gray-700">Payment Details</h4>
                     
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                         <div>
+                            <select
+                                name="payment_method"
+                                id="payment_method"
+                                className="block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500 text-xs sm:text-sm"
+                                value={formData.payment_method}
+                                onChange={handleChange}
+                            >
+                                <option value="online">Online</option>
+                                <option value="cash">Cash</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-3 gap-2">
                         <div>
                             <label className="block text-[10px] font-medium text-gray-600 mb-1">Total</label>

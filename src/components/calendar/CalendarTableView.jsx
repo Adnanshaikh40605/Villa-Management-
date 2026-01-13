@@ -13,7 +13,20 @@ export default function CalendarTableView({
   onUpdateBooking,
   onDeleteBooking
 }) {
-  const villasList = Array.isArray(villas) ? villas : (villas?.results || [])
+  const villasList = (Array.isArray(villas) ? villas : (villas?.results || [])).slice().sort((a, b) => {
+    const orderA = a.order || 0
+    const orderB = b.order || 0
+    
+    // Treat 0 as "end of list" (infinity-ish) so explicit 1, 2, 3... come first
+    const effectiveA = orderA === 0 ? 9999999 : orderA
+    const effectiveB = orderB === 0 ? 9999999 : orderB
+    
+    if (effectiveA !== effectiveB) {
+        return effectiveA - effectiveB
+    }
+    // Secondary sort by name
+    return (a.name || "").localeCompare(b.name || "")
+  })
   const [editingCell, setEditingCell] = useState(null) // { date: Date, villaId: string }
   const [inputValue, setInputValue] = useState('')
   
@@ -214,7 +227,22 @@ export default function CalendarTableView({
                   lineHeight: '1.3'
                 }}
               >
-                {villa.name}
+                {(() => {
+                  const words = villa.name.split(' ')
+                  if (words.length > 2) {
+                    return (
+                      <>
+                        {words.slice(0, 2).join(' ')}{' '}
+                        <span className="block sm:inline">
+                          {words.slice(2).join(' ')}
+                        </span>
+                      </>
+                    )
+                  }
+                  return villa.name
+                })()}
+                
+
               </th>
             ))}
           </tr>
