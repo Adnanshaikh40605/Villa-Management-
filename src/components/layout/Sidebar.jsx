@@ -24,8 +24,8 @@ import { usePWA } from '@/contexts/PWAContext'
 const navigation = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Calendar', href: '/calendar', icon: Calendar },
-  { name: 'Villas', href: '/villas', icon: Building2 },
   { name: 'Bookings', href: '/bookings', icon: ClipboardList },
+  { name: 'Villas', href: '/villas', icon: Building2 },
 ]
 
 export default function Sidebar() {

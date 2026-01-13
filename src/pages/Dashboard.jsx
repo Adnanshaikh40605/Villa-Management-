@@ -355,7 +355,7 @@ export default function Dashboard() {
                         </span>
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-900">
-                        ₹{parseFloat(booking.total_amount).toLocaleString()}
+                        ₹{parseFloat(booking.total_payment).toLocaleString()}
                       </td>
                       <td className="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
                         <button className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-white hover:shadow-sm transition-all border border-transparent hover:border-gray-100">
