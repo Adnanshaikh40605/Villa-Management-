@@ -94,13 +94,21 @@ api.interceptors.response.use(
            // No refresh token available
            throw new Error('No refresh token');
         }
-      } catch (refreshError) {
-        // Refresh failed, clear tokens and redirect to login
-        processQueue(refreshError, null);
-        localStorage.removeItem('access_token');
-        localStorage.removeItem('refresh_token');
-        localStorage.removeItem('villa_admin_auth');
-        window.location.href = '/login';
+      } catch (refreshError: any) {
+        // Refresh failed
+        // Only clear tokens and redirect if it's an authorization error (e.g. invalid refresh token)
+        // or if it's a "No refresh token" error we threw above
+        if (refreshError.response?.status === 401 || refreshError.message === 'No refresh token') {
+            processQueue(refreshError, null);
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem('villa_admin_auth');
+            window.location.href = '/login';
+        } else {
+            // For other errors (network, server 500), just reject but keep the session
+            // The user can try again later
+            processQueue(refreshError, null);
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;

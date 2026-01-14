@@ -14,7 +14,9 @@ export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { dispatch
     const user = await authService.getCurrentUser()
     return user
   } catch (error) {
-    return rejectWithValue(error.response?.data)
+    // Return both the data and the status code for better error handling in the reducer
+    const status = error.response ? error.response.status : 0
+    return rejectWithValue({ data: error.response?.data, status })
   }
 })
 
@@ -69,15 +71,21 @@ const authSlice = createSlice({
         state.user = action.payload
         state.isAuthenticated = true
       })
-      .addCase(checkAuth.rejected, (state) => {
+      .addCase(checkAuth.rejected, (state, action) => {
         state.status = 'failed'
         state.user = null
-        state.token = null
-        state.isAuthenticated = false
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('villa_admin_auth')
-        localStorage.removeItem('token')
+        
+        // Only logout if it is an authentication error (401)
+        // If it's a network error or server error (500), keep the session for now
+        // to prevent annoying logouts during temporary glitches
+        if (action.payload && action.payload.status === 401) {
+          state.token = null
+          state.isAuthenticated = false
+          localStorage.removeItem('access_token')
+          localStorage.removeItem('refresh_token')
+          localStorage.removeItem('villa_admin_auth')
+          localStorage.removeItem('token')
+        }
       })
   },
 })
