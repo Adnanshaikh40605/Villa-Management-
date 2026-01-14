@@ -1,11 +1,22 @@
-import { createSlice } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { authService } from '@/services/auth'
 
 // Use consistent token storage keys (access_token/refresh_token)
 const initialState = {
   user: null,
   token: localStorage.getItem('access_token') || null,
   isAuthenticated: !!localStorage.getItem('access_token'),
+  status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
 }
+
+export const checkAuth = createAsyncThunk('auth/checkAuth', async (_, { dispatch, rejectWithValue }) => {
+  try {
+    const user = await authService.getCurrentUser()
+    return user
+  } catch (error) {
+    return rejectWithValue(error.response?.data)
+  }
+})
 
 const authSlice = createSlice({
   name: 'auth',
@@ -32,6 +43,7 @@ const authSlice = createSlice({
       state.user = null
       state.token = null
       state.isAuthenticated = false
+      state.status = 'idle'
       // Clear all auth-related localStorage
       localStorage.removeItem('access_token')
       localStorage.removeItem('refresh_token')
@@ -47,6 +59,27 @@ const authSlice = createSlice({
       }
     },
   },
+  extraReducers: (builder) => {
+    builder
+      .addCase(checkAuth.pending, (state) => {
+        state.status = 'loading'
+      })
+      .addCase(checkAuth.fulfilled, (state, action) => {
+        state.status = 'succeeded'
+        state.user = action.payload
+        state.isAuthenticated = true
+      })
+      .addCase(checkAuth.rejected, (state) => {
+        state.status = 'failed'
+        state.user = null
+        state.token = null
+        state.isAuthenticated = false
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('refresh_token')
+        localStorage.removeItem('villa_admin_auth')
+        localStorage.removeItem('token')
+      })
+  },
 })
 
 export const { setCredentials, logout, updateToken } = authSlice.actions
@@ -55,3 +88,4 @@ export default authSlice.reducer
 export const selectCurrentUser = (state) => state.auth.user
 export const selectIsAuthenticated = (state) => state.auth.isAuthenticated
 export const selectToken = (state) => state.auth.token
+export const selectAuthStatus = (state) => state.auth.status

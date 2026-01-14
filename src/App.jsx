@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
-import { useSelector } from 'react-redux'
-import { selectIsAuthenticated } from '@/features/auth/authSlice'
+import { useDispatch, useSelector } from 'react-redux'
+import { selectIsAuthenticated, checkAuth, selectAuthStatus } from '@/features/auth/authSlice'
+import LoadingSpinner from '@/components/common/LoadingSpinner'
 
 // Layout
 import MainLayout from '@/components/layout/MainLayout'
@@ -20,18 +22,45 @@ import NotFound from '@/pages/NotFound'
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated)
+  const status = useSelector(selectAuthStatus)
+
+  if (status === 'loading') {
+    return <div className="h-screen w-screen flex items-center justify-center"><LoadingSpinner /></div>
+  }
+
   return isAuthenticated ? children : <Navigate to="/login" replace />
 }
 
 // Public Route Component (redirect if authenticated)
 const PublicRoute = ({ children }) => {
   const isAuthenticated = useSelector(selectIsAuthenticated)
+  const status = useSelector(selectAuthStatus)
+  
+  if (status === 'loading') {
+     return <div className="h-screen w-screen flex items-center justify-center"><LoadingSpinner /></div>
+  }
+
   return !isAuthenticated ? children : <Navigate to="/" replace />
 }
 
 import { PWAProvider } from '@/contexts/PWAContext'
 
 function App() {
+  const dispatch = useDispatch()
+  const token = localStorage.getItem('access_token')
+  const status = useSelector(selectAuthStatus)
+
+  useEffect(() => {
+    // Only check auth if we have a token and haven't checked yet (or are idle)
+    if (token && status === 'idle') {
+      dispatch(checkAuth())
+    }
+  }, [dispatch, token, status])
+
+  if (token && status === 'loading') {
+    return <div className="h-screen w-screen flex items-center justify-center"><LoadingSpinner /></div>
+  }
+
   return (
     <PWAProvider>
 
