@@ -9,8 +9,6 @@ import {
   Building,
   UserCheck,
   CheckCircle2,
-  Bell,
-  Search,
   MoreVertical,
   CalendarRange,
   ArrowUpRight,
@@ -110,18 +108,7 @@ export default function Dashboard() {
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="relative group hidden sm:block">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors" />
-            <input 
-              type="text" 
-              placeholder="Search properties, bookings..." 
-              className="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 w-72 shadow-sm transition-all"
-            />
-          </div>
-          <button className="relative p-2.5 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm group">
-            <Bell className="w-5 h-5 text-gray-500 group-hover:text-gray-700" />
-            <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full border border-white animate-pulse"></span>
-          </button>
+          {/* Search and Bell icon removed */}
         </div>
       </div>
 
