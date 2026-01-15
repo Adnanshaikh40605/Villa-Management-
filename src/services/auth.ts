@@ -1,4 +1,6 @@
-import api from './api';
+import axios from 'axios';
+import api, { API_BASE_URL } from './api';
+import { isTokenExpiringSoon } from '@/utils/jwt';
 
 export interface LoginResponse {
   access: string;
@@ -40,13 +42,32 @@ export const authService = {
   },
 
   async refreshToken(refreshToken: string): Promise<{ access: string; refresh?: string }> {
-    const response = await api.post<{ access: string; refresh?: string }>('/auth/refresh/', {
+    // Use axios directly to bypass interceptors and avoid circular dependencies/race conditions
+    const response = await axios.post<{ access: string; refresh?: string }>(`${API_BASE_URL}/auth/refresh/`, {
       refresh: refreshToken,
     });
     return response.data;
   },
 
   async getCurrentUser(): Promise<User> {
+    const token = localStorage.getItem('access_token');
+    const refreshToken = localStorage.getItem('refresh_token');
+
+    // Proactively refresh if token is expiring soon (within 5 minutes)
+    if (token && refreshToken && isTokenExpiringSoon(token)) {
+      try {
+        const { access, refresh } = await this.refreshToken(refreshToken);
+        localStorage.setItem('access_token', access);
+        if (refresh) {
+          localStorage.setItem('refresh_token', refresh);
+        }
+      } catch (error) {
+        // If refresh fails, continue to API call which will likely fail with 401
+        // and trigger the interceptor or strictly fail if refresh token is dead
+        console.warn('Proactive refresh failed:', error);
+      }
+    }
+
     const response = await api.get<User>('/auth/me/');
     return response.data;
   },
