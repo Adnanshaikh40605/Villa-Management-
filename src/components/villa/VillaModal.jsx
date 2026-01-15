@@ -57,8 +57,6 @@ export default function VillaModal({ isOpen, onClose, villa = null }) {
         special_day_price: '',
         weekend_days: [],
         status: 'active',
-        weekend_days: [],
-        status: 'active',
         order: 0,
        })
        setSpecialPrices([])

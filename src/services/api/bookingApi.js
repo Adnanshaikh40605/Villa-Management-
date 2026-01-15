@@ -92,6 +92,11 @@ export const bookingApi = apiSlice.injectEndpoints({
       query: () => '/bookings/booking-sources/',
       providesTags: ['Analytics'],
     }),
+
+    getRevenueCandles: builder.query({
+      query: (range = '1M') => `/bookings/revenue-candles/?range=${range}`,
+      providesTags: ['Analytics'],
+    }),
   }),
 })
 
@@ -107,4 +112,5 @@ export const {
   useGetRevenueChartQuery,
   useGetVillaPerformanceQuery,
   useGetBookingSourcesQuery,
+  useGetRevenueCandlesQuery,
 } = bookingApi

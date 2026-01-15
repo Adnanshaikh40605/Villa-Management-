@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   Banknote,
   Users,
@@ -17,23 +18,13 @@ import {
   Clock,
   MapPin
 } from 'lucide-react'
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  AreaChart,
-  Area
-} from 'recharts'
 import Card from '@/components/common/Card'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
+import RevenueChart from '@/components/dashboard/RevenueChart'
 import {
   useGetDashboardOverviewQuery,
   useGetRecentBookingsQuery,
+  useGetRevenueCandlesQuery,
 } from '@/services/api/bookingApi'
 import { format } from 'date-fns'
 
@@ -96,20 +87,11 @@ const ActivityItem = ({ title, value, subtitle, color, icon: Icon }) => {
 }
 
 export default function Dashboard() {
+  const [timeRange, setTimeRange] = useState('1M')
   const { data: overview, isLoading: overviewLoading } = useGetDashboardOverviewQuery()
   const { data: recentBookings, isLoading: bookingsLoading } = useGetRecentBookingsQuery(5)
+  const { data: candleData, isLoading: candleLoading } = useGetRevenueCandlesQuery(timeRange)
   const today = new Date()
-
-  // Mock data for the chart with gradients
-  const chartData = [
-    { name: 'Jan', revenue: 4000, bookings: 24 },
-    { name: 'Feb', revenue: 3000, bookings: 13 },
-    { name: 'Mar', revenue: 2000, bookings: 9 },
-    { name: 'Apr', revenue: 2780, bookings: 39 },
-    { name: 'May', revenue: 1890, bookings: 48 },
-    { name: 'Jun', revenue: 2390, bookings: 38 },
-    { name: 'Jul', revenue: 3490, bookings: 43 },
-  ]
 
   if (overviewLoading) {
     return (
@@ -185,67 +167,28 @@ export default function Dashboard() {
         <div className="xl:col-span-2 bg-white p-6 rounded-2xl border border-gray-100 shadow-soft">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h3 className="text-lg font-bold text-gray-900">Revenue Overview</h3>
-              <p className="text-sm text-gray-500">Comparing last 6 months performance</p>
+              <h3 className="text-lg font-bold text-gray-900">Revenue Overview {timeRange}</h3>
+              <p className="text-sm text-gray-500">Comparing revenue performance over time</p>
             </div>
-            <select className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2">
-                <option>Last 6 Months</option>
-                <option>Last Year</option>
+            <select 
+                value={timeRange}
+                onChange={(e) => setTimeRange(e.target.value)}
+                className="bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2"
+            >
+                <option value="7D">Last 7 Days</option>
+                <option value="1M">Last Month</option>
+                <option value="6M">Last 6 Months</option>
+                <option value="1Y">Last Year</option>
             </select>
           </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorBookings" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
-                <XAxis 
-                  dataKey="name" 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 500 }} 
-                  dy={10}
-                />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
-                  tick={{ fill: '#9ca3af', fontSize: 12, fontWeight: 500 }} 
-                />
-                <Tooltip 
-                  contentStyle={{ 
-                      borderRadius: '12px', 
-                      border: 'none', 
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-                      padding: '12px'
-                  }}
-                  cursor={{ stroke: '#e5e7eb', strokeDasharray: '4 4' }}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="revenue" 
-                  stroke="#3b82f6" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorRevenue)" 
-                />
-                 <Area 
-                  type="monotone" 
-                  dataKey="bookings" 
-                  stroke="#8b5cf6" 
-                  strokeWidth={3}
-                  fillOpacity={1} 
-                  fill="url(#colorBookings)" 
-                />
-              </AreaChart>
-            </ResponsiveContainer>
+          <div className="h-[350px] w-full">
+            {candleLoading ? (
+                <div className="flex items-center justify-center h-full">
+                    <LoadingSpinner />
+                </div>
+            ) : (
+                <RevenueChart data={candleData} />
+            )}
           </div>
         </div>
 
