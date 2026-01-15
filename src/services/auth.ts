@@ -1,6 +1,5 @@
 import axios from 'axios';
 import api, { API_BASE_URL } from './api';
-import { isTokenExpiringSoon } from '@/utils/jwt';
 
 export interface LoginResponse {
   access: string;
@@ -50,24 +49,8 @@ export const authService = {
   },
 
   async getCurrentUser(): Promise<User> {
-    const token = localStorage.getItem('access_token');
-    const refreshToken = localStorage.getItem('refresh_token');
-
-    // Proactively refresh if token is expiring soon (within 5 minutes)
-    if (token && refreshToken && isTokenExpiringSoon(token)) {
-      try {
-        const { access, refresh } = await this.refreshToken(refreshToken);
-        localStorage.setItem('access_token', access);
-        if (refresh) {
-          localStorage.setItem('refresh_token', refresh);
-        }
-      } catch (error) {
-        // If refresh fails, continue to API call which will likely fail with 401
-        // and trigger the interceptor or strictly fail if refresh token is dead
-        console.warn('Proactive refresh failed:', error);
-      }
-    }
-
+    // The axios interceptor in api.ts handles token refresh on 401 errors
+    // No need for proactive refresh here - it creates race conditions
     const response = await api.get<User>('/auth/me/');
     return response.data;
   },

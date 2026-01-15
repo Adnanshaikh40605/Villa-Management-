@@ -95,19 +95,26 @@ api.interceptors.response.use(
            throw new Error('No refresh token');
         }
       } catch (refreshError: any) {
-        // Refresh failed
+        // Refresh failed - distinguish between auth errors and network/server errors
         // Only clear tokens and redirect if it's an authorization error (e.g. invalid refresh token)
-        // or if it's a "No refresh token" error we threw above
+        // or if there's no refresh token available
         if (refreshError.response?.status === 401 || refreshError.message === 'No refresh token') {
+            // Auth failure - tokens are invalid, logout
             processQueue(refreshError, null);
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
             localStorage.removeItem('villa_admin_auth');
             window.location.href = '/login';
-        } else {
-            // For other errors (network, server 500), just reject but keep the session
-            // The user can try again later
+        } else if (refreshError.code === 'ERR_NETWORK' || !refreshError.response) {
+            // Network error or no response - keep session, just reject this request
+            // User can retry when network is back
             processQueue(refreshError, null);
+            console.error('Network error during token refresh. Session preserved.');
+        } else {
+            // Other errors (server 500, etc.) - keep session, reject request
+            // User can retry later
+            processQueue(refreshError, null);
+            console.error('Server error during token refresh. Session preserved.');
         }
         return Promise.reject(refreshError);
       } finally {
