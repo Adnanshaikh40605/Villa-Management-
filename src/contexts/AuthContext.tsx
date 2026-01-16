@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import { User, AuthState } from '@/types';
 import { authService } from '@/services/auth';
 import { handleApiError } from '@/services/api';
-import { isTokenExpired } from '@/utils/jwt';
+
 
 interface AuthContextType extends AuthState {
   login: (username: string, password: string) => Promise<boolean>;
@@ -40,82 +40,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      // Check if access token is actually expired (not "expiring soon")
-      const accessExpired = isTokenExpired(accessToken);
-
-      if (accessExpired) {
-        // Access token is expired, try to refresh
+      // Optimistically trust stored credentials
+      // If the access token is expired, the api.ts interceptor will handle the refresh
+      // automatically upon the first API request.
+      
+      if (storedUser) {
         try {
-          const { access, refresh } = await authService.refreshToken(refreshToken);
-          localStorage.setItem('access_token', access);
-          if (refresh) {
-            localStorage.setItem('refresh_token', refresh);
-          }
-          
-          // Token refreshed successfully, now fetch user
-          const currentUser = await authService.getCurrentUser();
+          const user = JSON.parse(storedUser);
           setState({
-            user: currentUser,
+            user,
             isAuthenticated: true,
             isLoading: false,
           });
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
-        } catch (refreshError) {
-          // Refresh failed - only then logout
-          console.error('Token refresh failed on page load:', refreshError);
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          localStorage.removeItem(STORAGE_KEY);
-          setState({
-            user: null,
-            isAuthenticated: false,
-            isLoading: false,
-          });
-        }
-      } else {
-        // Access token is still valid - trust it without making an API call
-        if (storedUser) {
-          try {
-            setState({
-              user: JSON.parse(storedUser),
-              isAuthenticated: true,
-              isLoading: false,
-            });
-          } catch (parseError) {
-            // Stored user data is corrupted, fetch fresh
-            console.warn('Stored user data corrupted, fetching fresh:', parseError);
-            try {
-              const currentUser = await authService.getCurrentUser();
-              setState({
-                user: currentUser,
-                isAuthenticated: true,
-                isLoading: false,
-              });
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
-            } catch (fetchError) {
-              // Only logout if it's a 401 (invalid token)
-              if (handleApiError(fetchError).includes('401') || handleApiError(fetchError).includes('Unauthorized')) {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                localStorage.removeItem(STORAGE_KEY);
-                setState({
-                  user: null,
-                  isAuthenticated: false,
-                  isLoading: false,
-                });
-              } else {
-                // Network error or server error - keep session but mark as loading done
-                // User will see an error on the page but won't be logged out
-                setState({
-                  user: null,
-                  isAuthenticated: true, // Keep authenticated state
-                  isLoading: false,
-                });
-              }
-            }
-          }
-        } else {
-          // No stored user, fetch it ONCE since token is valid
+        } catch (error) {
+          console.error('Failed to parse stored user:', error);
+          // If parsing fails, try to verify with backend
           try {
             const currentUser = await authService.getCurrentUser();
             setState({
@@ -125,26 +64,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
           } catch (fetchError) {
-            // Only logout if it's a 401 (invalid token)
-            if (handleApiError(fetchError).includes('401') || handleApiError(fetchError).includes('Unauthorized')) {
-              localStorage.removeItem('access_token');
-              localStorage.removeItem('refresh_token');
-              localStorage.removeItem(STORAGE_KEY);
-              setState({
-                user: null,
-                isAuthenticated: false,
-                isLoading: false,
-              });
-            } else {
-              // Network error or server error - keep session but mark as loading done
-              setState({
-                user: null,
-                isAuthenticated: true, // Keep authenticated state
-                isLoading: false,
-              });
-            }
+            // If fetch fails (and refresh fails), clear everything
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem(STORAGE_KEY);
+            setState({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
           }
         }
+      } else {
+         // Tokens exist but no user data? Fetch it.
+         try {
+            const currentUser = await authService.getCurrentUser();
+            setState({
+              user: currentUser,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
+         } catch (fetchError) {
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+            localStorage.removeItem(STORAGE_KEY);
+            setState({
+              user: null,
+              isAuthenticated: false,
+              isLoading: false,
+            });
+         }
       }
     };
 
