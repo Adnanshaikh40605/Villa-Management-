@@ -301,9 +301,14 @@ export default function CalendarTableView({
                                                 {booking.status === 'blocked' && <span className="mr-1">🔒</span>}
                                                 <span className="truncate">{booking.client_name}</span>
                                             </div>
-                                            {/* Show price in small text for booked cells too */}
+                                            {/* Show override price if set, otherwise show total_payment, finally villa price */}
                                             <span className="text-[10px] text-gray-600 font-normal leading-none mt-0.5">
-                                                {getVillaPrice(day, villa)}
+                                                {booking.override_total_payment
+                                                  ? `₹${parseFloat(booking.override_total_payment).toLocaleString()}`
+                                                  : (booking.total_payment && parseFloat(booking.total_payment) > 0)
+                                                    ? `₹${parseFloat(booking.total_payment).toLocaleString()}`
+                                                    : getVillaPrice(day, villa)
+                                                }
                                             </span>
                                         </div>
                                     ) : (

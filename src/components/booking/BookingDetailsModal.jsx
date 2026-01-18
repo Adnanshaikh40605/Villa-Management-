@@ -31,6 +31,11 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
       }
   }
 
+  const [priceOverride, setPriceOverride] = useState({
+    isEditing: false,
+    customPrice: '',
+  })
+
   const [formData, setFormData] = useState({
     client: '',
     phone: '',
@@ -59,6 +64,11 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
         check_out: booking.check_out || booking.checkOut,
         advance_payment: booking.advance_payment || 0,
         payment_method: booking.payment_method || 'online'
+      })
+      // Reset price override state
+      setPriceOverride({
+        isEditing: false,
+        customPrice: booking.override_total_payment || ''
       })
       // Only reset editing state if we're opening a fresh modal, not during re-renders
       if (!isEditing) setIsEditing(false)
@@ -90,7 +100,7 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
          return
      }
 
-     onUpdate(booking.id, {
+     const updateData = {
          client_name: formData.client,
          client_phone: formData.phone,
          client_email: formData.email,
@@ -102,7 +112,14 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
          check_out: formData.check_out,
          advance_payment: formData.advance_payment,
          payment_method: formData.payment_method
-     })
+     }
+
+     // Add override price if custom pricing is enabled
+     if (priceOverride.isEditing && priceOverride.customPrice) {
+       updateData.override_total_payment = parseFloat(priceOverride.customPrice)
+     }
+
+     onUpdate(booking.id, updateData)
   }
 
   const handleDelete = () => {
@@ -209,7 +226,7 @@ vacationbna.com`
         </div>
 
         {/* Client Details */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Client</label>
               {isEditing ? (
@@ -241,7 +258,7 @@ vacationbna.com`
         </div>
         
         {/* Additional Details */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Guests</label>
                {isEditing ? (
@@ -277,7 +294,7 @@ vacationbna.com`
         </div>
 
         {/* Dates - Read Only for now as changing dates involves complex availability checks, user can delete and recreate if date changes needed, or we implement that later */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
             <p className="text-base text-gray-900">
@@ -295,8 +312,53 @@ vacationbna.com`
         {/* Payment Details */}
         <div className="space-y-3 pt-2 border-t border-gray-200">
             <h4 className="text-sm font-semibold text-gray-700">Payment Details</h4>
+
+            {/* Price Breakdown - only show when NOT editing override AND has auto_calculated_price */}
+            {booking.auto_calculated_price && !priceOverride.isEditing && (
+              <div className="bg-blue-50 border border-blue-200 rounded p-2">
+                <p className="text-xs font-medium text-blue-900 mb-1">Price Breakdown</p>
+                <div className="flex gap-2 text-xs">
+                  {booking.auto_calculated_price.base_nights > 0 && (
+                    <div className="bg-white rounded px-2 py-1">
+                      <span className="text-gray-600">Base: {booking.auto_calculated_price.base_nights}n</span>
+                    </div>
+                  )}
+                  {booking.auto_calculated_price.weekend_nights > 0 && (
+                    <div className="bg-white rounded px-2 py-1">
+                      <span className="text-gray-600">Weekend: {booking.auto_calculated_price.weekend_nights}n</span>
+                    </div>
+                  )}
+                  {booking.auto_calculated_price.special_nights > 0 && (
+                    <div className="bg-white rounded px-2 py-1">
+                      <span className="text-gray-600">Special: {booking.auto_calculated_price.special_nights}n</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Custom Price Input - only show when editing */}
+            {priceOverride.isEditing && (
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                <p className="text-xs font-medium text-yellow-900 mb-1">
+                  Custom Price
+                  {booking.auto_calculated_price && (
+                    <span className="ml-1 text-yellow-700">
+                      (Auto: ₹{parseFloat(booking.auto_calculated_price.total).toLocaleString()})
+                    </span>
+                  )}
+                </p>
+                <input
+                  type="number"
+                  value={priceOverride.customPrice}
+                  onChange={(e) => setPriceOverride({ ...priceOverride, customPrice: e.target.value })}
+                  className="w-full border border-yellow-300 rounded shadow-sm py-1.5 px-2 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm font-semibold"
+                  placeholder="Enter custom price"
+                />
+              </div>
+            )}
             
-            <div className="grid grid-cols-2 gap-4 mb-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-2">
                  <div>
                     {isEditing ? (
                        <select
@@ -316,11 +378,59 @@ vacationbna.com`
                  </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Total Payment</label>
-                  <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-900 font-semibold sm:text-sm">
-                    ₹{booking.total_payment || '0'}
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-xs font-medium text-gray-600">
+                      Total Payment
+                      {priceOverride.isEditing && (
+                        <span className="ml-1 text-yellow-600">(Custom)</span>
+                      )}
+                      {booking.override_total_payment && !priceOverride.isEditing && (
+                        <span className="ml-1 text-yellow-600">(Overridden)</span>
+                      )}
+                    </label>
+                    {isEditing && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!priceOverride.isEditing) {
+                            setPriceOverride({ 
+                              isEditing: true, 
+                              customPrice: booking.override_total_payment || booking.total_payment || '' 
+                            })
+                          } else {
+                            setPriceOverride({ isEditing: false, customPrice: '' })
+                          }
+                        }}
+                        className="text-[10px] px-1.5 py-0.5 rounded border border-primary-300 text-primary-700 hover:bg-primary-50 transition-colors flex items-center gap-0.5"
+                      >
+                        {priceOverride.isEditing ? (
+                          <>
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Cancel
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            Edit
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  <div className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 font-semibold sm:text-sm ${
+                    priceOverride.isEditing || booking.override_total_payment
+                      ? 'border-yellow-300 bg-yellow-50 text-yellow-900' 
+                      : 'border-gray-300 bg-gray-50 text-gray-900'
+                  }`}>
+                    ₹{priceOverride.isEditing && priceOverride.customPrice 
+                      ? parseFloat(priceOverride.customPrice).toLocaleString() 
+                      : (booking.total_payment || '0')}
                   </div>
                 </div>
                 <div>
@@ -422,7 +532,7 @@ vacationbna.com`
         </div>
 
         {/* Actions */}
-        <div className="flex justify-between gap-3 pt-4 border-t border-gray-100">
+        <div className="flex flex-col sm:flex-row justify-between gap-3 pt-4 border-t border-gray-100">
             {isEditing ? (
                 <>
                     <button
@@ -440,10 +550,11 @@ vacationbna.com`
                 </>
             ) : (
                 <>
+                    <div className="flex flex-col sm:flex-row gap-3 w-full">
                     <button
                         onClick={handleSendWhatsAppConfirmation}
                         disabled={!formData.phone}
-                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="flex-1 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         title={!formData.phone ? "Phone number required" : "Send confirmation via WhatsApp"}
                     >
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
@@ -455,7 +566,7 @@ vacationbna.com`
                     <button
                         onClick={handleSendEmailConfirmation}
                         disabled={isSendingEmail}
-                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="flex-1 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         title="Send confirmation via Email"
                     >
                         {isSendingEmail ? (
@@ -470,16 +581,17 @@ vacationbna.com`
                         )}
                         Email
                     </button>
-                    <div className="flex gap-3">
+                    </div>
+                    <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                         <button
                             onClick={handleDelete}
-                            className="px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none"
+                            className="flex-1 sm:flex-none px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none"
                         >
                             Delete
                         </button>
                         <button
                             onClick={() => setIsEditing(true)}
-                            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none"
+                            className="flex-1 sm:flex-none px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none"
                         >
                             Edit Booking
                         </button>
