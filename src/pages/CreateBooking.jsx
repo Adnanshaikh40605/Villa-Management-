@@ -28,6 +28,12 @@ export default function CreateBooking() {
     total_payment: null,
     nights: 0,
     isLoading: false,
+    breakdown: null,
+  })
+
+  const [priceOverride, setPriceOverride] = useState({
+    isEditing: false,
+    customPrice: '',
   })
 
   const { data: villasData, isLoading: villasLoading } = useGetVillasQuery()
@@ -49,21 +55,29 @@ export default function CreateBooking() {
           setPricePreview({
             total_payment: result.total_payment,
             nights: result.nights,
+            breakdown: result.auto_calculated_price,
             isLoading: false,
           })
+          // Reset override when dates or villa change
+          setPriceOverride({ isEditing: false, customPrice: '' })
         } catch (error) {
           console.error('Failed to calculate price:', error)
-          setPricePreview({ total_payment: null, nights: 0, isLoading: false })
+          setPricePreview({ total_payment: null, nights: 0, breakdown: null, isLoading: false })
         }
       } else {
-        setPricePreview({ total_payment: null, nights: 0, isLoading: false })
+        setPricePreview({ total_payment: null, nights: 0, breakdown: null, isLoading: false })
       }
     }
     fetchPrice()
   }, [formData.villa, selectedDates])
 
-  const pendingPayment = pricePreview.total_payment 
-    ? (parseFloat(pricePreview.total_payment) - parseFloat(formData.advance_payment || 0))
+
+  const effectivePrice = priceOverride.isEditing && priceOverride.customPrice 
+    ? priceOverride.customPrice 
+    : pricePreview.total_payment
+
+  const pendingPayment = effectivePrice 
+    ? (parseFloat(effectivePrice) - parseFloat(formData.advance_payment || 0))
     : 0
 
   const handleChange = (e) => {
@@ -90,6 +104,11 @@ export default function CreateBooking() {
         status: formData.status,
         payment_status: formData.payment_status,
         advance_payment: formData.payment_status === 'advance' ? formData.advance_payment : 0,
+      }
+
+      // Add override price if custom pricing is enabled
+      if (priceOverride.isEditing && priceOverride.customPrice) {
+        bookingData.override_total_payment = parseFloat(priceOverride.customPrice)
       }
 
       if (formData.status === 'booked') {
@@ -293,18 +312,105 @@ export default function CreateBooking() {
                 </div>
               )}
 
-              {/* Payment Details */}
-              <div className="space-y-3 pt-2 border-t border-gray-200">
-                  <h4 className="text-sm font-semibold text-gray-700">Payment Details</h4>
+              {/* Payment Details with Price Override */}
+              <div className="space-y-4 pt-2 border-t border-gray-200">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold text-gray-700">Payment Details</h4>
+                    {pricePreview.total_payment && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!priceOverride.isEditing) {
+                            setPriceOverride({ 
+                              isEditing: true, 
+                              customPrice: pricePreview.total_payment 
+                            })
+                          } else {
+                            setPriceOverride({ isEditing: false, customPrice: '' })
+                          }
+                        }}
+                        className="text-xs px-3 py-1 rounded-md border border-primary-300 text-primary-700 hover:bg-primary-50 transition-colors flex items-center gap-1"
+                      >
+                        {priceOverride.isEditing ? (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Cancel Override
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            </svg>
+                            Edit Price
+                          </>
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Price Breakdown */}
+                  {pricePreview.breakdown && !priceOverride.isEditing && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                      <p className="text-xs font-medium text-blue-900">Auto-Calculated Price Breakdown</p>
+                      <div className="grid grid-cols-3 gap-2 text-xs">
+                        {pricePreview.breakdown.base_nights > 0 && (
+                          <div className="bg-white rounded p-2">
+                            <p className="text-gray-600">Base Nights</p>
+                            <p className="font-semibold text-gray-900">{pricePreview.breakdown.base_nights}</p>
+                          </div>
+                        )}
+                        {pricePreview.breakdown.weekend_nights > 0 && (
+                          <div className="bg-white rounded p-2">
+                            <p className="text-gray-600">Weekend</p>
+                            <p className="font-semibold text-gray-900">{pricePreview.breakdown.weekend_nights}</p>
+                          </div>
+                        )}
+                        {pricePreview.breakdown.special_nights > 0 && (
+                          <div className="bg-white rounded p-2">
+                            <p className="text-gray-600">Special</p>
+                            <p className="font-semibold text-gray-900">{pricePreview.breakdown.special_nights}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Custom Price Input */}
+                  {priceOverride.isEditing && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                      <p className="text-xs font-medium text-yellow-900 mb-2">
+                        Custom Price Override 
+                        <span className="ml-1 text-yellow-700">(Auto-calculated: ₹{parseFloat(pricePreview.total_payment).toLocaleString()})</span>
+                      </p>
+                      <input
+                        type="number"
+                        value={priceOverride.customPrice}
+                        onChange={(e) => setPriceOverride({ ...priceOverride, customPrice: e.target.value })}
+                        className="w-full border border-yellow-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-sm font-semibold"
+                        placeholder="Enter custom price"
+                      />
+                    </div>
+                  )}
                   
                   <div className="grid grid-cols-3 gap-3">
                       <div>
-                          <label className="block text-xs font-medium text-gray-600 mb-1">Total Payment</label>
-                          <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-900 font-semibold sm:text-sm">
+                          <label className="block text-xs font-medium text-gray-600 mb-1">
+                            Total Payment
+                            {priceOverride.isEditing && (
+                              <span className="ml-1 text-yellow-600">(Custom)</span>
+                            )}
+                          </label>
+                          <div className={`mt-1 block w-full border rounded-md shadow-sm py-2 px-3 font-semibold sm:text-sm ${
+                            priceOverride.isEditing 
+                              ? 'border-yellow-300 bg-yellow-50 text-yellow-900' 
+                              : 'border-gray-300 bg-gray-50 text-gray-900'
+                          }`}>
                               {pricePreview.isLoading ? (
                                   <span className="text-gray-400">Calculating...</span>
-                              ) : pricePreview.total_payment ? (
-                                  `₹${parseFloat(pricePreview.total_payment).toLocaleString()}`
+                              ) : effectivePrice ? (
+                                  `₹${parseFloat(effectivePrice).toLocaleString()}`
                               ) : (
                                   <span className="text-gray-400">₹0</span>
                               )}

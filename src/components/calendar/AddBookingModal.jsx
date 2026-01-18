@@ -25,6 +25,12 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
     total_payment: null,
     nights: 0,
     isLoading: false,
+    breakdown: null,
+  })
+
+  const [priceOverride, setPriceOverride] = useState({
+    isEditing: false,
+    customPrice: '',
   })
 
   // Update checkOutDate whenever date changes
@@ -70,11 +76,14 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
           setPricePreview({
             total_payment: result.total_payment,
             nights: result.nights,
+            breakdown: result.auto_calculated_price,
             isLoading: false,
           })
+          // Reset override when dates or villa change
+          setPriceOverride({ isEditing: false, customPrice: '' })
         } catch (error) {
           console.error('Failed to calculate price:', error)
-          setPricePreview({ total_payment: null, nights: 0, isLoading: false })
+          setPricePreview({ total_payment: null, nights: 0, breakdown: null, isLoading: false })
         }
       } else {
         console.log('Skipping price calc - missing data')
@@ -84,8 +93,12 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
     fetchPrice()
   }, [villa, date, checkOutDate])
 
-  const pendingPayment = pricePreview.total_payment 
-    ? (parseFloat(pricePreview.total_payment) - parseFloat(formData.advance_payment || 0))
+  const effectivePrice = priceOverride.isEditing && priceOverride.customPrice 
+    ? priceOverride.customPrice 
+    : pricePreview.total_payment
+
+  const pendingPayment = effectivePrice 
+    ? (parseFloat(effectivePrice) - parseFloat(formData.advance_payment || 0))
     : 0
 
   const handleChange = (e) => {
@@ -115,7 +128,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
     if (advance >= total && total > 0) payStatus = 'full'
     else if (advance > 0) payStatus = 'advance'
 
-    onSave({
+    const bookingData = {
         ...formData,
         client_email: formData.client_email,
         number_of_guests: formData.number_of_guests ? parseInt(formData.number_of_guests) : null,
@@ -126,7 +139,14 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
         advance_payment: advance,
         payment_status: payStatus,
         payment_method: formData.payment_method,
-    })
+    }
+
+    // Add override price if custom pricing is enabled
+    if (priceOverride.isEditing && priceOverride.customPrice) {
+      bookingData.override_total_payment = parseFloat(priceOverride.customPrice)
+    }
+
+    onSave(bookingData)
     onClose()
   }
 
@@ -246,6 +266,47 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
                 {/* Payment Fields */}
                 <div className="space-y-2 pt-2 border-t border-gray-200">
                     <h4 className="text-xs font-semibold text-gray-700">Payment Details</h4>
+
+                    {/* Price Breakdown - only show when NOT editing */}
+                    {pricePreview.breakdown && !priceOverride.isEditing && (
+                      <div className="bg-blue-50 border border-blue-200 rounded p-2 mb-2">
+                        <p className="text-[10px] font-medium text-blue-900 mb-1">Price Breakdown</p>
+                        <div className="flex gap-2 text-[10px]">
+                          {pricePreview.breakdown.base_nights > 0 && (
+                            <div className="bg-white rounded px-2 py-1">
+                              <span className="text-gray-600">Base: {pricePreview.breakdown.base_nights}n</span>
+                            </div>
+                          )}
+                          {pricePreview.breakdown.weekend_nights > 0 && (
+                            <div className="bg-white rounded px-2 py-1">
+                              <span className="text-gray-600">Weekend: {pricePreview.breakdown.weekend_nights}n</span>
+                            </div>
+                          )}
+                          {pricePreview.breakdown.special_nights > 0 && (
+                            <div className="bg-white rounded px-2 py-1">
+                              <span className="text-gray-600">Special: {pricePreview.breakdown.special_nights}n</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Custom Price Input - only show when editing */}
+                    {priceOverride.isEditing && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-2">
+                        <p className="text-[10px] font-medium text-yellow-900 mb-1">
+                          Custom Price
+                          <span className="ml-1 text-yellow-700">(Auto: ₹{parseFloat(pricePreview.total_payment).toLocaleString()})</span>
+                        </p>
+                        <input
+                          type="number"
+                          value={priceOverride.customPrice}
+                          onChange={(e) => setPriceOverride({ ...priceOverride, customPrice: e.target.value })}
+                          className="w-full border border-yellow-300 rounded shadow-sm py-1 px-2 focus:outline-none focus:ring-yellow-500 focus:border-yellow-500 text-xs font-semibold"
+                          placeholder="Enter custom price"
+                        />
+                      </div>
+                    )}
                     
                     <div className="grid grid-cols-2 gap-2 mb-2">
                          <div>
@@ -264,12 +325,55 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
 
                     <div className="grid grid-cols-3 gap-2">
                         <div>
-                            <label className="block text-[10px] font-medium text-gray-600 mb-1">Total</label>
-                            <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-2 bg-gray-50 text-gray-900 font-semibold text-xs sm:text-sm truncate">
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="block text-[10px] font-medium text-gray-600">
+                                Total
+                                {priceOverride.isEditing && (
+                                  <span className="ml-1 text-yellow-600">(Custom)</span>
+                                )}
+                              </label>
+                              {pricePreview.total_payment && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!priceOverride.isEditing) {
+                                      setPriceOverride({ 
+                                        isEditing: true, 
+                                        customPrice: pricePreview.total_payment 
+                                      })
+                                    } else {
+                                      setPriceOverride({ isEditing: false, customPrice: '' })
+                                    }
+                                  }}
+                                  className="text-[10px] px-1.5 py-0.5 rounded border border-primary-300 text-primary-700 hover:bg-primary-50 transition-colors flex items-center gap-0.5"
+                                >
+                                  {priceOverride.isEditing ? (
+                                    <>
+                                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                      </svg>
+                                      Cancel
+                                    </>
+                                  ) : (
+                                    <>
+                                      <svg className="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                      </svg>
+                                      Edit
+                                    </>
+                                  )}
+                                </button>
+                              )}
+                            </div>
+                            <div className={`mt-1 block w-full border rounded-md shadow-sm py-1.5 px-2 font-semibold text-xs sm:text-sm truncate ${
+                              priceOverride.isEditing 
+                                ? 'border-yellow-300 bg-yellow-50 text-yellow-900' 
+                                : 'border-gray-300 bg-gray-50 text-gray-900'
+                            }`}>
                                 {pricePreview.isLoading ? (
                                     <span className="text-gray-400">...</span>
-                                ) : pricePreview.total_payment ? (
-                                    `₹${parseFloat(pricePreview.total_payment).toLocaleString()}`
+                                ) : effectivePrice ? (
+                                    `₹${parseFloat(effectivePrice).toLocaleString()}`
                                 ) : (
                                     <span className="text-gray-400">₹0</span>
                                 )}
