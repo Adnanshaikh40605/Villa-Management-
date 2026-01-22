@@ -298,14 +298,12 @@ export default function Calendar() {
             <span className="text-gray-500 font-medium">Legend:</span>
             
             <div className="flex items-center gap-1.5">
-                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
-                    ₹ Price
-                </span>
+                <span className="inline-block w-4 h-4 rounded bg-green-50 border border-green-300"></span>
                 <span className="text-gray-600">Available</span>
             </div>
 
             <div className="flex items-center gap-1.5">
-                <span className="inline-block w-4 h-4 rounded bg-green-100 border border-green-200"></span>
+                <span className="inline-block w-4 h-4 rounded bg-red-100 border border-red-200"></span>
                 <span className="text-gray-600">Booked</span>
             </div>
 

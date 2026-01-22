@@ -180,10 +180,10 @@ export default function CalendarTableView({
   }
 
   const getStatusColor = (booking) => {
-    if (!booking) return ''
-    if (booking.status === 'blocked') return 'bg-gray-200 text-gray-800'
-    if (booking.status === 'tentative') return 'bg-yellow-100 text-yellow-800'
-    return 'bg-green-100 text-green-900' // Default booked - changed to green
+    if (!booking) return 'bg-green-50 hover:bg-green-100' // Available - Green
+    if (booking.status === 'blocked') return 'bg-gray-200 text-gray-800' // Blocked - Gray
+    if (booking.status === 'tentative') return 'bg-yellow-100 text-yellow-800' // Tentative - Yellow
+    return 'bg-red-100 text-red-900' // Booked - Red
   }
 
   return (
@@ -320,7 +320,7 @@ export default function CalendarTableView({
                             ) : (
                                 // Empty cell: Show price badge
                                 <div className="w-full flex justify-start pl-2">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-200 transition-colors">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white text-gray-900 border border-green-300 shadow-sm hover:border-green-400 transition-colors">
                                         {getVillaPrice(day, villa)}
                                     </span>
                                 </div>
