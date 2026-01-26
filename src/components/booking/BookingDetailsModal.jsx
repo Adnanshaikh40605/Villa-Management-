@@ -453,7 +453,19 @@ vacationbna.com`
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">Pending Payment</label>
                   <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-red-600 font-semibold sm:text-sm">
-                    ₹{booking.pending_payment || '0'}
+                    ₹{(() => {
+                      const currentTotal = priceOverride.isEditing && priceOverride.customPrice
+                        ? parseFloat(priceOverride.customPrice || 0)
+                        : (booking.override_total_payment
+                            ? parseFloat(booking.override_total_payment)
+                            : parseFloat(booking.total_payment || 0));
+                      
+                      const currentAdvance = isEditing 
+                        ? parseFloat(formData.advance_payment || 0) 
+                        : parseFloat(booking.advance_payment || 0);
+                        
+                      return (currentTotal - currentAdvance).toLocaleString();
+                    })()}
                   </div>
                 </div>
             </div>
