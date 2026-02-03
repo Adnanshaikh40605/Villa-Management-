@@ -283,7 +283,7 @@ export default function CalendarTableView({
                     className={`
                         p-0 whitespace-nowrap text-sm border-r border-gray-200 relative h-12
                         ${!isEditing ? 'cursor-cell hover:ring-2 hover:ring-primary-400 hover:z-10' : ''}
-                        ${booking ? getStatusColor(booking, day) : ''}
+                        ${getStatusColor(booking, day)}
                     `}
                     onClick={() => handleCellClick(day, villa.id, booking, villa)}
                     title={booking ? `${booking.client_name} - ${booking.status}` : 'Click to add booking'}
