@@ -136,7 +136,6 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
     }
 
     // Format dates used in the message
-    // Template needs: "12th January 2026" (No time as per latest request)
     const checkInDateObj = formData.check_in ? new Date(formData.check_in) : null
     const checkOutDateObj = formData.check_out ? new Date(formData.check_out) : null
 
@@ -156,12 +155,21 @@ export default function BookingDetailsModal({ isOpen, onClose, booking: initialB
     }
 
     // Payment Calculations
-    const total = parseFloat(booking.total_payment || 0)
-    const advance = parseFloat(formData.advance_payment || 0)
+    // Use override price if editing or set, otherwise booking total
+    const total = priceOverride.isEditing && priceOverride.customPrice
+      ? parseFloat(priceOverride.customPrice || 0)
+      : (booking.override_total_payment
+          ? parseFloat(booking.override_total_payment)
+          : parseFloat(booking.total_payment || 0));
+          
+    const advance = isEditing 
+      ? parseFloat(formData.advance_payment || 0) 
+      : parseFloat(booking.advance_payment || 0);
+      
     const pending = total - advance
 
-    // Using Surrogate Pairs for maximum compatibility
-    const message = `Dear ${formData.client},
+    // Exact format requested by user
+    const message = `Dear Mr ${formData.client},
 
 Booking Confirmation – ${villaName}.
 
@@ -170,10 +178,10 @@ We’re pleased to confirm your ${villaName} booking.
 
 Booking Details:
 Villa Type: ${villaName}
- Check-in: ${checkInFormatted}
- Check-out: ${checkOutFormatted}
+Check-in: ${checkInFormatted} at 1.00 pm
+Check-out: ${checkOutFormatted} at 11.00 Am.
 
-Payment of Rs ${advance} received as confirmation, remaining payment of Rs ${pending} you can do at checkin.
+Payment of Rs ${advance.toLocaleString()} received as confirmation, remaining payment of Rs ${pending.toLocaleString()} you can do at checkin.
 
 Your booking is successfully confirmed. The villa will be thoroughly cleaned, fully prepared, and ready before your arrival to ensure a smooth and comfortable stay.
 

@@ -180,25 +180,17 @@ export default function CalendarTableView({
   }
 
   const getStatusColor = (booking, day) => {
-    // 1. Available (No booking) -> White
-    if (!booking) return 'bg-white hover:bg-gray-50' 
+    // 1. Available (No booking) -> Green
+    if (!booking) return 'bg-green-50 hover:bg-green-100' 
     
-    const today = startOfDay(new Date())
-
     // 2. Blocked -> Gray
     if (booking.status === 'blocked') return 'bg-gray-200 text-gray-800' // Blocked - Gray
     
     // 3. Tentative -> Yellow
     if (booking.status === 'tentative') return 'bg-yellow-100 text-yellow-800' // Tentative - Yellow
     
-    // 4. Booked -> Date Check
-    // If the day is before today (past) -> Red
-    // If the day is today or in the future -> Green
-    if (isBefore(day, today)) {
-        return 'bg-red-100 text-red-900 border-red-200' 
-    }
-    
-    return 'bg-green-100 text-green-900 border-green-200' // Upcoming - Green
+    // 4. Booked -> Red
+    return 'bg-red-100 text-red-900 border-red-200' 
   }
 
   return (
@@ -335,7 +327,7 @@ export default function CalendarTableView({
                             ) : (
                                 // Empty cell: Show price badge
                                 <div className="w-full flex justify-start pl-2">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-200 transition-colors">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-white text-gray-900 border border-green-300 shadow-sm transition-colors">
                                         {getVillaPrice(day, villa)}
                                     </span>
                                 </div>
