@@ -301,19 +301,39 @@ vacationbna.com`
             </div>
         </div>
 
-        {/* Dates - Read Only for now as changing dates involves complex availability checks, user can delete and recreate if date changes needed, or we implement that later */}
+        {/* Dates - Now Editable */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Check-in</label>
-            <p className="text-base text-gray-900">
-              {checkInDate && !isNaN(checkInDate.getTime()) ? format(checkInDate, 'MMM dd, yyyy') : 'N/A'}
-            </p>
+            {isEditing ? (
+              <input
+                type="date"
+                name="check_in"
+                value={formData.check_in}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              />
+            ) : (
+              <p className="text-base text-gray-900">
+                {checkInDate && !isNaN(checkInDate.getTime()) ? format(checkInDate, 'MMM dd, yyyy') : 'N/A'}
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Check-out</label>
-             <p className="text-base text-gray-900">
-              {checkOutDate && !isNaN(checkOutDate.getTime()) ? format(checkOutDate, 'MMM dd, yyyy') : 'N/A'}
-            </p>
+            {isEditing ? (
+              <input
+                type="date"
+                name="check_out"
+                value={formData.check_out}
+                onChange={handleChange}
+                className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+              />
+            ) : (
+              <p className="text-base text-gray-900">
+                {checkOutDate && !isNaN(checkOutDate.getTime()) ? format(checkOutDate, 'MMM dd, yyyy') : 'N/A'}
+              </p>
+            )}
           </div>
         </div>
 

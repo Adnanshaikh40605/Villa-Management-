@@ -3,8 +3,10 @@ import { format, addDays } from 'date-fns'
 import { bookingsService } from '@/services/bookings'
 
 export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }) {
-  // Initialize checkOutDate immediately from date prop
+  // Initialize check-in and check-out dates from date prop
+  const initialCheckIn = date ? format(new Date(date), 'yyyy-MM-dd') : ''
   const initialCheckOut = date ? format(addDays(new Date(date), 1), 'yyyy-MM-dd') : ''
+  const [checkInDate, setCheckInDate] = useState(initialCheckIn)
   const [checkOutDate, setCheckOutDate] = useState(initialCheckOut)
   
   const [formData, setFormData] = useState({
@@ -33,9 +35,10 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
     customPrice: '',
   })
 
-  // Update checkOutDate whenever date changes
+  // Update check-in and check-out dates whenever date prop changes
   React.useEffect(() => {
     if (date) {
+      setCheckInDate(format(new Date(date), 'yyyy-MM-dd'))
       const nextDay = addDays(new Date(date), 1)
       setCheckOutDate(format(nextDay, 'yyyy-MM-dd'))
     }
@@ -61,15 +64,15 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
 
   // Calculate price when villa or dates change
   useEffect(() => {
-    console.log('Price calc useEffect:', { villa, date, checkOutDate, villaId: villa?.id })
+    console.log('Price calc useEffect:', { villa, checkInDate, checkOutDate, villaId: villa?.id })
     const fetchPrice = async () => {
-      if (villa && date && checkOutDate) {
+      if (villa && checkInDate && checkOutDate) {
         setPricePreview(prev => ({ ...prev, isLoading: true }))
         try {
-          console.log('Calling calculatePrice with:', villa.id, format(date, 'yyyy-MM-dd'), checkOutDate)
+          console.log('Calling calculatePrice with:', villa.id, checkInDate, checkOutDate)
           const result = await bookingsService.calculatePrice(
             villa.id,
-            format(date, 'yyyy-MM-dd'),
+            checkInDate,
             checkOutDate
           )
           console.log('Price result:', result)
@@ -91,7 +94,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
       }
     }
     fetchPrice()
-  }, [villa, date, checkOutDate])
+  }, [villa, checkInDate, checkOutDate])
 
   const effectivePrice = priceOverride.isEditing && priceOverride.customPrice 
     ? priceOverride.customPrice 
@@ -133,7 +136,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
         client_email: formData.client_email,
         number_of_guests: formData.number_of_guests ? parseInt(formData.number_of_guests) : null,
         villa: villa.id,
-        check_in: format(date, 'yyyy-MM-dd'),
+        check_in: checkInDate,
         check_out: checkOutDate,
         total_payment: total,
         advance_payment: advance,
@@ -202,10 +205,16 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
                 {/* Row 2: Dates */}
                 <div className="grid grid-cols-2 gap-3">
                     <div>
-                         <label className="block text-xs font-medium text-gray-700">Check-in</label>
-                         <div className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 bg-gray-50 text-gray-500 sm:text-sm">
-                             {format(date, 'yyyy-MM-dd')}
-                         </div>
+                         <label htmlFor="check_in_date" className="block text-xs font-medium text-gray-700">Check-in</label>
+                         <input
+                            type="date"
+                            name="check_in_date"
+                            id="check_in_date"
+                            required
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                            value={checkInDate}
+                            onChange={(e) => setCheckInDate(e.target.value)}
+                         />
                     </div>
                     <div>
                          <label htmlFor="check_out_date" className="block text-xs font-medium text-gray-700">Check-out</label>
@@ -214,7 +223,7 @@ export default function AddBookingModal({ isOpen, onClose, onSave, villa, date }
                             name="check_out_date"
                             id="check_out_date"
                             required
-                            min={format(new Date(date.getTime() + 86400000), 'yyyy-MM-dd')}
+                            min={checkInDate}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-1.5 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                             value={checkOutDate}
                             onChange={(e) => setCheckOutDate(e.target.value)}
