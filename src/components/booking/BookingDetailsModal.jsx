@@ -178,8 +178,8 @@ We’re pleased to confirm your ${villaName} booking.
 
 Booking Details:
 Villa Type: ${villaName}
-Check-in: ${checkInFormatted} at 1.00 pm
-Check-out: ${checkOutFormatted} at 11.00 Am.
+Check-in: ${checkInFormatted} at 1.00pm
+Check-out: ${checkOutFormatted} at 11.00am
 
 Payment of Rs ${advance.toLocaleString()} received as confirmation, remaining payment of Rs ${pending.toLocaleString()} you can do at checkin.
 
