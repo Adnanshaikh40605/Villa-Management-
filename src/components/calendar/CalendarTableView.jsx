@@ -117,7 +117,7 @@ export default function CalendarTableView({
   }, [editingCell])
 
 
-  const getVillaPrice = (date, villa) => {
+  const getVillaPriceInfo = (date, villa) => {
     const day = date.getDay()
     
     // Priority 1: Check if this date falls within any special price range
@@ -130,7 +130,11 @@ export default function CalendarTableView({
         
         // Check if current date is within this range (inclusive)
         if (dateStr >= startDate && dateStr <= endDate) {
-          return `₹${Math.floor(parseFloat(specialPrice.price)).toLocaleString()}`
+          return {
+              priceStr: `₹${Math.floor(parseFloat(specialPrice.price)).toLocaleString()}`,
+              isSpecial: true,
+              specialName: specialPrice.name || 'Special Day'
+          }
         }
       }
     }
@@ -141,7 +145,7 @@ export default function CalendarTableView({
       const dateMonth = date.getMonth() + 1 // JS months are 0-indexed
       const dateYear = date.getFullYear()
       
-      const isSpecialDay = globalSpecialDays.some(specialDay => {
+      const isSpecialDayObj = globalSpecialDays.find(specialDay => {
         // Match day and month
         if (specialDay.day === dateDay && specialDay.month === dateMonth) {
           // If year is specified, it must match; otherwise day/month match is enough
@@ -153,8 +157,12 @@ export default function CalendarTableView({
         return false
       })
       
-      if (isSpecialDay) {
-        return `₹${Math.floor(parseFloat(villa.special_day_price)).toLocaleString()}`
+      if (isSpecialDayObj) {
+        return {
+           priceStr: `₹${Math.floor(parseFloat(villa.special_day_price)).toLocaleString()}`,
+           isSpecial: true,
+           specialName: isSpecialDayObj.name || 'Special Day'
+        }
       }
     }
     
@@ -173,15 +181,22 @@ export default function CalendarTableView({
     
     // Format and return the price
     if (!price || price === 0) {
-        return '₹0'
+        return { priceStr: '₹0', isSpecial: false, specialName: null }
     }
     
-    return `₹${Math.floor(price).toLocaleString()}`
+    return {
+        priceStr: `₹${Math.floor(price).toLocaleString()}`,
+        isSpecial: false,
+        specialName: null
+    }
   }
 
-  const getStatusColor = (booking, day) => {
-    // 1. Available (No booking) -> White
-    if (!booking) return 'bg-white hover:bg-gray-50' 
+  const getStatusColor = (booking, day, isSpecial = false) => {
+    // 1. Available (No booking) -> White or Orange for special
+    if (!booking) {
+        if (isSpecial) return 'bg-orange-50 hover:bg-orange-100 text-orange-900 border-orange-200'
+        return 'bg-white hover:bg-gray-50' 
+    }
     
     // 2. Blocked -> Gray
     if (booking.status === 'blocked') return 'bg-gray-200 text-gray-800' // Blocked - Gray
@@ -283,6 +298,7 @@ export default function CalendarTableView({
                 const booking = getBookingForDateAndVilla(day, villa.id);
                 const isStart = isBookingStart(day, booking);
                 const isEditing = editingCell?.date === day && editingCell?.villaId === villa.id;
+                const priceInfo = getVillaPriceInfo(day, villa);
                 
                 return (
                   <td 
@@ -290,7 +306,7 @@ export default function CalendarTableView({
                     className={`
                         p-0 whitespace-nowrap text-sm border-r border-gray-200 relative h-12
                         ${!isEditing ? 'cursor-cell hover:ring-2 hover:ring-primary-400 hover:z-10' : ''}
-                        ${getStatusColor(booking, day)}
+                        ${getStatusColor(booking, day, priceInfo.isSpecial)}
                     `}
                     onClick={() => handleCellClick(day, villa.id, booking, villa)}
                     title={booking ? `${booking.client_name} - ${booking.status}` : 'Click to add booking'}
@@ -321,7 +337,7 @@ export default function CalendarTableView({
                                                   ? `₹${parseFloat(booking.override_total_payment).toLocaleString()}`
                                                   : (booking.total_payment && parseFloat(booking.total_payment) > 0)
                                                     ? `₹${parseFloat(booking.total_payment).toLocaleString()}`
-                                                    : getVillaPrice(day, villa)
+                                                    : priceInfo.priceStr
                                                 }
                                             </span>
                                         </div>
@@ -333,10 +349,21 @@ export default function CalendarTableView({
                                 </span>
                             ) : (
                                 // Empty cell: Show price badge
-                                <div className="w-full flex justify-start pl-2">
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-200 transition-colors">
-                                        {getVillaPrice(day, villa)}
-                                    </span>
+                                <div className="w-full h-full flex flex-col justify-center pl-1 sm:pl-2">
+                                    <div className="flex items-center gap-1.5 flex-wrap">
+                                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-medium border transition-colors
+                                            ${priceInfo.isSpecial 
+                                                ? 'bg-orange-100 text-orange-800 border-orange-200 hover:bg-orange-200' 
+                                                : 'bg-gray-100 text-gray-600 border-gray-200 hover:bg-primary-50 hover:text-primary-700 hover:border-primary-200'}`}
+                                        >
+                                            {priceInfo.priceStr}
+                                        </span>
+                                        {priceInfo.isSpecial && (
+                                            <span className="text-[10px] sm:text-[11px] text-orange-700 font-medium truncate max-w-[80px]" title={priceInfo.specialName}>
+                                                {priceInfo.specialName}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>

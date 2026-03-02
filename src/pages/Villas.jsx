@@ -1,18 +1,19 @@
+// Replace imports
 import { useState } from 'react'
-import { PlusIcon, BuildingOfficeIcon, CalendarDaysIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, BuildingOfficeIcon, DocumentArrowUpIcon } from '@heroicons/react/24/outline'
 import { useGetVillasQuery, useDeleteVillaMutation } from '@/services/api/villaApi'
 import Card from '@/components/common/Card'
 import Button from '@/components/common/Button'
 import Badge from '@/components/common/Badge'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import VillaModal from '@/components/villa/VillaModal'
-import GlobalSpecialDayModal from '@/components/settings/GlobalSpecialDayModal'
+import ExcelUploadModal from '@/components/settings/ExcelUploadModal'
 import toast from 'react-hot-toast'
 
 export default function Villas() {
   const [statusFilter, setStatusFilter] = useState('')
   const [villaModalOpen, setVillaModalOpen] = useState(false)
-  const [globalSpecialDayModalOpen, setGlobalSpecialDayModalOpen] = useState(false)
+  const [excelUploadModalOpen, setExcelUploadModalOpen] = useState(false)
   const [selectedVilla, setSelectedVilla] = useState(null)
   const { data, isLoading } = useGetVillasQuery({ status: statusFilter })
   const [deleteVilla] = useDeleteVillaMutation()
@@ -57,8 +58,8 @@ export default function Villas() {
           <p className="mt-1 text-gray-600">Manage your villa properties</p>
         </div>
         <div className="flex gap-2">
-            <Button variant="secondary" icon={CalendarDaysIcon} onClick={() => setGlobalSpecialDayModalOpen(true)}>
-              Add Special Day
+            <Button variant="secondary" icon={DocumentArrowUpIcon} onClick={() => setExcelUploadModalOpen(true)}>
+              Upload Special Days
             </Button>
             <Button variant="primary" icon={PlusIcon} onClick={() => setVillaModalOpen(true)}>
               Add Villa
@@ -164,10 +165,11 @@ export default function Villas() {
         villa={selectedVilla}
       />
       
-      {/* Global Special Day Modal */}
-      <GlobalSpecialDayModal
-          isOpen={globalSpecialDayModalOpen}
-          onClose={() => setGlobalSpecialDayModalOpen(false)}
+      {/* Excel Upload Modal */}
+      <ExcelUploadModal
+          isOpen={excelUploadModalOpen}
+          onClose={() => setExcelUploadModalOpen(false)}
+          villas={villas}
       />
     </div>
   )
