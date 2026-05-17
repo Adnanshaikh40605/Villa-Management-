@@ -9,10 +9,11 @@ import './index.css'
 import { registerSW } from 'virtual:pwa-register'
 
 // Register the PWA service worker
-registerSW({
+const updateSW = registerSW({
   immediate: true,
   onNeedRefresh() {
     console.log('PWA: New content available, click on reload button to update.')
+    updateSW(true)
   },
   onOfflineReady() {
     console.log('PWA: App ready to work offline')
